@@ -57,6 +57,7 @@ dkms.conf
 
 # Builds
 build/
+dist/
 
 #ROMs
 roms/
