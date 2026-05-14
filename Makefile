@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -O2
 BUILD_DIR = build
 DIST_DIR = dist
 
-SRCS = vcs.c conio.c
+SRCS = vcs.c conio.c debug.c
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 TARGET = $(DIST_DIR)/vcs
 
@@ -14,7 +14,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS) | $(DIST_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(BUILD_DIR)/%.o: %.c vcs.h conio.h | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.c vcs.h conio.h debug.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR):

@@ -1,4 +1,5 @@
 #include "vcs.h"
+#include "debug.h"
 
 unsigned short addr_absolute() {
 	/*
@@ -55,7 +56,7 @@ unsigned short addr_indirect_x() {
 	unsigned char byte1;
 	unsigned char byte2;
 
-	fetch();
+	vcs_fetch();
 	address = instruction + index_register_x;
 	byte1 = memory[address];
 	byte2 = memory[address + 1];
@@ -73,7 +74,7 @@ unsigned short addr_indirect_y() {
 	unsigned char byte1;
 	unsigned char byte2;
 
-	fetch();
+	vcs_fetch();
 	byte1 = memory[instruction];
 	byte2 = memory[instruction + 1];
 	return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & MEMORY_MASK;
@@ -86,7 +87,7 @@ signed char addr_relative() {
 	Relative addressing mode is used by branch instructions (e.g. BEQ, BNE, etc.) which contain a signed 8 bit relative offset (e.g. -128 to +127) which is added to program counter if the condition is true.
 	As the program counter itself is incremented during instruction execution by two the effective address range for the target instruction must be with -126 to +129 bytes of the branch.
 	*/
-	fetch();
+	vcs_fetch();
 	return instruction;
 }
 
@@ -97,7 +98,7 @@ unsigned short addr_zero_page() {
 	An instruction using zero page addressing mode has only an 8 bit address operand.
 	This limits it to addressing only the first 256 bytes of memory (e.g. $0000 to $00FF) where the most significant byte of the address is always zero.
 	*/
-	fetch();
+	vcs_fetch();
 	return (0x0000 | instruction) & MEMORY_MASK;
 }
 
@@ -110,7 +111,7 @@ unsigned short addr_zero_page_x() {
 	The address calculation wraps around if the sum of the base address and the register exceed $FF.
 	If we repeat the last example but with $FF in the X register then the accumulator will be loaded from $007F (e.g. $80 + $FF => $7F) and not $017F.
 	*/
-	fetch();
+	vcs_fetch();
 	return (instruction + index_register_x) & MEMORY_MASK;
 }
 
@@ -121,7 +122,7 @@ unsigned short addr_zero_page_y() {
 	The address to be accessed by an instruction using indexed zero page addressing is calculated by taking the 8 bit zero page address from the instruction and adding the current value of the Y register to it.
 	This mode can only be used with the LDX and STX instructions.
 	*/
-	fetch();
+	vcs_fetch();
 	return (instruction + index_register_y) & MEMORY_MASK;
 }
 
@@ -149,11 +150,11 @@ void check_zero(unsigned char data) {
 	}
 }
 
-void cycle() {
+void vcs_cycle() {
 	while(running) {
-		fetch();
-		decode();
-		update();
+		vcs_fetch();
+		vcs_decode();
+		vcs_update();
 	}
 }
 
@@ -175,7 +176,7 @@ unsigned char data_immediate() {
 
 	Immediate addressing allows the programmer to directly specify an 8 bit constant within the instruction.
 	*/
-	fetch();
+	vcs_fetch();
 	return instruction;
 }
 
@@ -199,7 +200,7 @@ unsigned char data_zero_page_y() {
 	return memory[addr_zero_page_y()];
 }
 
-void decode() {
+void vcs_decode() {
 	switch (instruction) {
 		case 0x00:
 			instruction_brk();
@@ -811,9 +812,9 @@ void decode() {
 	}
 }
 
-void fetch() {
+void vcs_fetch() {
 	instruction = memory[program_counter++];
-	printf("%x\n", instruction);
+	debug_update(instruction);
 }
 
 unsigned char flag_break() {
@@ -1639,7 +1640,7 @@ void instruction_tya() {
 	check_zero(accumulator);
 }
 
-void load_rom(char path[]) {
+void vcs_load_rom(char path[]) {
 	FILE *file;
 	unsigned char byte;
 	unsigned short i;
@@ -1661,7 +1662,7 @@ void load_rom(char path[]) {
 	fclose(file);
 	program_counter = (memory[VECTOR_RESET] | (memory[VECTOR_RESET + 1] << BYTE_SIZE)) & MEMORY_MASK;
 	clrscr();
-	cycle();
+	vcs_cycle();
 }
 
 int main(int argc, char *argv[]) {
@@ -1669,7 +1670,7 @@ int main(int argc, char *argv[]) {
 		printf("Usage: %s file.rom\n", argv[0]);
 		exit(1);
 	} else {
-		load_rom(argv[1]);
+		vcs_load_rom(argv[1]);
 		clrscr();
 	}
 
@@ -1686,9 +1687,9 @@ unsigned short operand_2bytes() {
 	unsigned char byte1;
 	unsigned char byte2;
 
-	fetch();
+	vcs_fetch();
 	byte1 = instruction;
-	fetch();
+	vcs_fetch();
 	byte2 = instruction;
 	return byte1 | (byte2 << BYTE_SIZE);
 }
@@ -1713,7 +1714,7 @@ void stack_push(unsigned short data) {
 	stack[stack_pointer--] = data;
 }
 
-void update() {
+void vcs_update() {
 	if (kbhit() && getch() == KEY_ESC) {
 		running = 0;
 	}
