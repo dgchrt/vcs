@@ -5,7 +5,7 @@
 #include "conio.h"
 
 void clrscr(void) {
-    printf("\033[H\033[J");
+    printf("%s", TERM_CLEAR_SCREEN);
 }
 
 int getch(void) {
