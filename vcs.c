@@ -1673,7 +1673,7 @@ void vcs_load_rom(char path[]) {
 
 	fclose(file);
 	program_counter = (memory[VECTOR_RESET] | (memory[VECTOR_RESET + 1] << BYTE_SIZE)) & MEMORY_MASK;
-	clrscr();
+	// clrscr();
 	vcs_cycle();
 }
 
@@ -1683,7 +1683,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	} else {
 		vcs_load_rom(argv[1]);
-		clrscr();
+		// clrscr();
 	}
 
 	return 0;
