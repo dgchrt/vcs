@@ -43,6 +43,12 @@ During execution, the emulator will log the CPU state for each instruction to th
 
 Press `ESC` to stop the emulator.
 
+## Notes
+
+- **Execution Speed:** The emulator currently runs at the maximum speed allowed by your host CPU. There is no internal timing mechanism to match the original VCS clock speed.
+- **Logging Detail:** The debug trace logs every single byte fetch. This means for a 3-byte instruction, you will see three lines of output (one for the opcode and two for the operand bytes).
+- **Compatibility:** Only standard 4K ROMs are supported. Cartridges with bank-switching or special hardware will not work in the current implementation.
+
 ## Project History
 
 This project was originally developed using Borland Turbo C for DOS and has been ported to modern POSIX/Linux environments using standard `termios` for terminal handling.
