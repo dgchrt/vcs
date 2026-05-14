@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include "conio.h"
 
 #define BYTE_SIZE 8
 #define KEY_ESC 27
@@ -37,9 +39,9 @@ unsigned short stack_pointer = 0xff;
 unsigned short addr_indirect_x();
 unsigned short addr_indirect_y();
 signed char addr_relative();
-void check_negative();
-void check_overflow();
-void check_zero();
+void check_negative(unsigned char data);
+void check_overflow(unsigned short data);
+void check_zero(unsigned char data);
 void cycle();
 unsigned char data_indirect_x();
 unsigned char data_indirect_y();
