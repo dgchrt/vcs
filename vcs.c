@@ -6,7 +6,7 @@ unsigned short addr_absolute() {
 
 	Instructions using absolute addressing contain a full 16 bit address to identify the target location.
 	*/
-	return operand_2bytes() & 0x1fff;
+	return operand_2bytes() & MEMORY_MASK;
 }
 
 unsigned short addr_absolute_x() {
@@ -16,7 +16,7 @@ unsigned short addr_absolute_x() {
 	The address to be accessed by an instruction using X register indexed absolute addressing is computed by taking the 16 bit address from the instruction and added the contents of the X register.
 	For example if X contains $92 then an STA $2000,X instruction will store the accumulator at $2092 (e.g. $2000 + $92).
 	*/
-	return (operand_2bytes() + index_register_x) & 0x1fff;
+	return (operand_2bytes() + index_register_x) & MEMORY_MASK;
 }
 
 unsigned short addr_absolute_y() {
@@ -25,7 +25,7 @@ unsigned short addr_absolute_y() {
 
 	The Y register indexed absolute addressing mode is the same as the previous mode only with the contents of the Y register added to the 16 bit address from the instruction.
 	*/
-	return (operand_2bytes() + index_register_y) & 0x1fff;
+	return (operand_2bytes() + index_register_y) & MEMORY_MASK;
 }
 
 unsigned short addr_indirect() {
@@ -41,7 +41,7 @@ unsigned short addr_indirect() {
 
 	byte1 = memory[operand_2bytes()];
 	byte2 = memory[operand_2bytes() + 1];
-	return (byte1 | (byte2 << BYTE_SIZE)) & 0x1fff;
+	return (byte1 | (byte2 << BYTE_SIZE)) & MEMORY_MASK;
 }
 
 unsigned short addr_indirect_x() {
@@ -59,7 +59,7 @@ unsigned short addr_indirect_x() {
 	address = instruction + index_register_x;
 	byte1 = memory[address];
 	byte2 = memory[address + 1];
-	return (byte1 | (byte2 << BYTE_SIZE)) & 0x1fff;
+	return (byte1 | (byte2 << BYTE_SIZE)) & MEMORY_MASK;
 }
 
 unsigned short addr_indirect_y() {
@@ -76,7 +76,7 @@ unsigned short addr_indirect_y() {
 	fetch();
 	byte1 = memory[instruction];
 	byte2 = memory[instruction + 1];
-	return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & 0x1fff;
+	return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & MEMORY_MASK;
 }
 
 signed char addr_relative() {
@@ -98,7 +98,7 @@ unsigned short addr_zero_page() {
 	This limits it to addressing only the first 256 bytes of memory (e.g. $0000 to $00FF) where the most significant byte of the address is always zero.
 	*/
 	fetch();
-	return (0x0000 | instruction) & 0x1fff;
+	return (0x0000 | instruction) & MEMORY_MASK;
 }
 
 unsigned short addr_zero_page_x() {
@@ -111,7 +111,7 @@ unsigned short addr_zero_page_x() {
 	If we repeat the last example but with $FF in the X register then the accumulator will be loaded from $007F (e.g. $80 + $FF => $7F) and not $017F.
 	*/
 	fetch();
-	return (instruction + index_register_x) & 0x1fff;
+	return (instruction + index_register_x) & MEMORY_MASK;
 }
 
 unsigned short addr_zero_page_y() {
@@ -122,11 +122,11 @@ unsigned short addr_zero_page_y() {
 	This mode can only be used with the LDX and STX instructions.
 	*/
 	fetch();
-	return (instruction + index_register_y) & 0x1fff;
+	return (instruction + index_register_y) & MEMORY_MASK;
 }
 
 void check_negative(unsigned char data) {
-	if (data & (1 << STATUS_BIT_NEGATIVE) > 0) {
+	if ((data & (1 << STATUS_BIT_NEGATIVE)) > 0) {
 		flag_negative_set();
 	} else {
 		flag_negative_unset();
@@ -1055,7 +1055,7 @@ void instruction_brk() {
 	stack_push(program_counter);
 	stack_push(program_counter >> BYTE_SIZE);
 	stack_push(processor_status);
-	program_counter = memory[0xfffe] | (memory[0xffff] << BYTE_SIZE);
+	program_counter = (memory[VECTOR_IRQ] | (memory[VECTOR_IRQ + 1] << BYTE_SIZE)) & MEMORY_MASK;
 	flag_break_set();
 }
 
@@ -1660,7 +1660,7 @@ void load_rom(char path[]) {
 	}
 
 	fclose(file);
-	program_counter = (memory[0x1ffc] | (memory[0x1ffd] << BYTE_SIZE)) & 0x1fff;
+	program_counter = (memory[VECTOR_RESET] | (memory[VECTOR_RESET + 1] << BYTE_SIZE)) & MEMORY_MASK;
 	clrscr();
 	cycle();
 }

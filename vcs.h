@@ -5,6 +5,9 @@
 #define BYTE_SIZE 8
 #define KEY_ESC 27
 #define MEMORY_SIZE 0x2000
+#define MEMORY_MASK (MEMORY_SIZE - 1)
+#define VECTOR_RESET 0x1ffc
+#define VECTOR_IRQ 0x1ffe
 /*
 0x0000 - 0x007f: TIA
 0x0080 - 0x00ff: RAM (128 bytes)
