@@ -1654,8 +1654,7 @@ void load_rom(char path[]) {
 	printf("Loading %s...\n", path);
 	i = ROM_ADDRESS;
 
-	while (!feof(file)) {
-		fread(&byte, 1, 1, file);
+	while (fread(&byte, 1, 1, file) == 1) {
 		memory[i++] = byte;
 	}
 
