@@ -27,7 +27,6 @@
 #define STATUS_BIT_ZERO 1
 
 unsigned char accumulator;
-unsigned char frequency = 0;
 unsigned char index_register_x;
 unsigned char index_register_y;
 unsigned char instruction;

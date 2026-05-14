@@ -1666,13 +1666,9 @@ void load_rom(char path[]) {
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
-		printf("Usage: %s file.rom [frequency]\n", argv[0]);
+		printf("Usage: %s file.rom\n", argv[0]);
 		exit(1);
 	} else {
-		if (argc > 2) {
-			frequency = atoi(argv[2]);
-		}
-
 		load_rom(argv[1]);
 		clrscr();
 	}
