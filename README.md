@@ -27,7 +27,22 @@ Alternatively, you can run the executable directly:
 ./dist/vcs roms/adventure.a26
 ```
 
-During execution, the emulator will log each fetched instruction byte to the console. Press `ESC` to stop the emulator.
+## Debugging
+
+During execution, the emulator will log the CPU state for each instruction to the console. The output layout is as follows:
+
+`PC:1000 OP:4C A:00 X:00 Y:00 SP:FF ST:24`
+
+- **PC**: Program Counter (current instruction address)
+- **OP**: Opcode (hexadecimal value of the instruction)
+- **A**: Accumulator register
+- **X**: X index register
+- **Y**: Y index register
+- **SP**: Stack Pointer
+- **ST**: Status Flags (Processor Status register)
+
+Press `ESC` to stop the emulator.
 
 ## Project History
-This project was originally developed using Borland Turbo C for DOS and has been recently ported to modern POSIX/Linux environments using standard `termios` for terminal handling.
+
+This project was originally developed using Borland Turbo C for DOS and has been ported to modern POSIX/Linux environments using standard `termios` for terminal handling.

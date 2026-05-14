@@ -1,6 +1,18 @@
 #include "vcs.h"
 #include "debug.h"
 
+unsigned char accumulator;
+unsigned char index_register_x;
+unsigned char index_register_y;
+unsigned char instruction;
+unsigned char memory[MEMORY_SIZE];
+unsigned char processor_status = 36;
+unsigned short program_counter;
+unsigned char registers[REGISTER_SIZE];
+unsigned char running = 1;
+unsigned short stack[STACK_SIZE];
+unsigned short stack_pointer = 0xff;
+
 unsigned short addr_absolute() {
 	/*
 	Absolute
@@ -814,7 +826,7 @@ void vcs_decode() {
 
 void vcs_fetch() {
 	instruction = memory[program_counter++];
-	debug_update(instruction);
+	debug_update(program_counter - 1, instruction, accumulator, index_register_x, index_register_y, stack_pointer, processor_status);
 }
 
 unsigned char flag_break() {

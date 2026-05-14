@@ -26,17 +26,17 @@
 #define STATUS_BIT_OVERFLOW 6
 #define STATUS_BIT_ZERO 1
 
-unsigned char accumulator;
-unsigned char index_register_x;
-unsigned char index_register_y;
-unsigned char instruction;
-unsigned char memory[MEMORY_SIZE];
-unsigned char processor_status = 36;
-unsigned short program_counter;
-unsigned char registers[REGISTER_SIZE];
-unsigned char running = 1;
-unsigned short stack[STACK_SIZE];
-unsigned short stack_pointer = 0xff;
+extern unsigned char accumulator;
+extern unsigned char index_register_x;
+extern unsigned char index_register_y;
+extern unsigned char instruction;
+extern unsigned char memory[MEMORY_SIZE];
+extern unsigned char processor_status;
+extern unsigned short program_counter;
+extern unsigned char registers[REGISTER_SIZE];
+extern unsigned char running;
+extern unsigned short stack[STACK_SIZE];
+extern unsigned short stack_pointer;
 
 unsigned short addr_indirect_x();
 unsigned short addr_indirect_y();
