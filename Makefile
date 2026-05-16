@@ -3,18 +3,22 @@ CFLAGS = -Wall -Wextra -O2
 BUILD_DIR = build
 DIST_DIR = dist
 
-SRCS = vcs.c conio.c debug.c
+SRCS = $(wildcard *.c)
+HDRS = $(wildcard *.h)
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 TARGET = $(DIST_DIR)/vcs
 
-.PHONY: all clean
+.PHONY: all clean lint
 
 all: $(TARGET)
+
+lint:
+	cppcheck --enable=all --std=c11 --suppress=missingIncludeSystem .
 
 $(TARGET): $(OBJS) | $(DIST_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(BUILD_DIR)/%.o: %.c vcs.h conio.h debug.h | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: %.c $(HDRS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
