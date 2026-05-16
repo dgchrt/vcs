@@ -577,7 +577,7 @@ int mos6507_decode() {
     break;
 
   case 0xa0:
-    mos6507_instruction_bcs(data_immediate());
+    mos6507_instruction_ldy(data_immediate());
     break;
 
   case 0xa1:
@@ -589,7 +589,7 @@ int mos6507_decode() {
     break;
 
   case 0xa4:
-    mos6507_instruction_bcs(data_zero_page());
+    mos6507_instruction_ldy(data_zero_page());
     break;
 
   case 0xa5:
@@ -613,7 +613,7 @@ int mos6507_decode() {
     break;
 
   case 0xac:
-    mos6507_instruction_bcs(data_absolute());
+    mos6507_instruction_ldy(data_absolute());
     break;
 
   case 0xad:
@@ -633,7 +633,7 @@ int mos6507_decode() {
     break;
 
   case 0xb4:
-    mos6507_instruction_bcs(data_zero_page_x());
+    mos6507_instruction_ldy(data_zero_page_x());
     break;
 
   case 0xb5:
@@ -657,7 +657,7 @@ int mos6507_decode() {
     break;
 
   case 0xbc:
-    mos6507_instruction_bcs(data_absolute_x());
+    mos6507_instruction_ldy(data_absolute_x());
     break;
 
   case 0xbd:
