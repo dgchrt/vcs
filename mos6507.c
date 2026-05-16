@@ -232,12 +232,44 @@ int mos6507_decode() {
     mos6507_instruction_asl(addr_zero_page());
     break;
 
+  case 0x03:
+    mos6507_instruction_slo(mos6507_addr_indirect_x());
+    break;
+
+  case 0x07:
+    mos6507_instruction_slo(addr_zero_page());
+    break;
+
+  case 0x0f:
+    mos6507_instruction_slo(addr_absolute());
+    break;
+
+  case 0x13:
+    mos6507_instruction_slo(mos6507_addr_indirect_y());
+    break;
+
+  case 0x17:
+    mos6507_instruction_slo(addr_zero_page_x());
+    break;
+
+  case 0x1b:
+    mos6507_instruction_slo(addr_absolute_y());
+    break;
+
+  case 0x1f:
+    mos6507_instruction_slo(addr_absolute_x());
+    break;
+
   case 0x08:
     mos6507_instruction_php();
     break;
 
   case 0x09:
     mos6507_instruction_ora(data_immediate());
+    break;
+
+  case 0x0b:
+    mos6507_instruction_anc(data_immediate());
     break;
 
   case 0x0a:
@@ -292,6 +324,10 @@ int mos6507_decode() {
     mos6507_instruction_and(data_indirect_x());
     break;
 
+  case 0x23:
+    mos6507_instruction_rla(mos6507_addr_indirect_x());
+    break;
+
   case 0x24:
     mos6507_instruction_bit(data_zero_page());
     break;
@@ -304,12 +340,40 @@ int mos6507_decode() {
     mos6507_instruction_rol(addr_zero_page());
     break;
 
+  case 0x27:
+    mos6507_instruction_rla(addr_zero_page());
+    break;
+
+  case 0x2f:
+    mos6507_instruction_rla(addr_absolute());
+    break;
+
+  case 0x33:
+    mos6507_instruction_rla(mos6507_addr_indirect_y());
+    break;
+
+  case 0x37:
+    mos6507_instruction_rla(addr_zero_page_x());
+    break;
+
+  case 0x3b:
+    mos6507_instruction_rla(addr_absolute_y());
+    break;
+
+  case 0x3f:
+    mos6507_instruction_rla(addr_absolute_x());
+    break;
+
   case 0x28:
     mos6507_instruction_plp();
     break;
 
   case 0x29:
     mos6507_instruction_and(data_immediate());
+    break;
+
+  case 0x2b:
+    mos6507_instruction_anc(data_immediate());
     break;
 
   case 0x2a:
@@ -368,6 +432,10 @@ int mos6507_decode() {
     mos6507_instruction_eor(data_indirect_x());
     break;
 
+  case 0x43:
+    mos6507_instruction_sre(mos6507_addr_indirect_x());
+    break;
+
   case 0x45:
     mos6507_instruction_eor(data_zero_page());
     break;
@@ -376,12 +444,40 @@ int mos6507_decode() {
     mos6507_instruction_lsr(addr_zero_page());
     break;
 
+  case 0x47:
+    mos6507_instruction_sre(addr_zero_page());
+    break;
+
+  case 0x4f:
+    mos6507_instruction_sre(addr_absolute());
+    break;
+
+  case 0x53:
+    mos6507_instruction_sre(mos6507_addr_indirect_y());
+    break;
+
+  case 0x57:
+    mos6507_instruction_sre(addr_zero_page_x());
+    break;
+
+  case 0x5b:
+    mos6507_instruction_sre(addr_absolute_y());
+    break;
+
+  case 0x5f:
+    mos6507_instruction_sre(addr_absolute_x());
+    break;
+
   case 0x48:
     mos6507_instruction_pha();
     break;
 
   case 0x49:
     mos6507_instruction_eor(data_immediate());
+    break;
+
+  case 0x4b:
+    mos6507_instruction_alr(data_immediate());
     break;
 
   case 0x4a:
@@ -440,12 +536,40 @@ int mos6507_decode() {
     mos6507_instruction_adc(data_indirect_x());
     break;
 
+  case 0x63:
+    mos6507_instruction_rra(mos6507_addr_indirect_x());
+    break;
+
   case 0x65:
     mos6507_instruction_adc(data_zero_page());
     break;
 
   case 0x66:
     mos6507_instruction_ror(addr_zero_page());
+    break;
+
+  case 0x67:
+    mos6507_instruction_rra(addr_zero_page());
+    break;
+
+  case 0x6f:
+    mos6507_instruction_rra(addr_absolute());
+    break;
+
+  case 0x73:
+    mos6507_instruction_rra(mos6507_addr_indirect_y());
+    break;
+
+  case 0x77:
+    mos6507_instruction_rra(addr_zero_page_x());
+    break;
+
+  case 0x7b:
+    mos6507_instruction_rra(addr_absolute_y());
+    break;
+
+  case 0x7f:
+    mos6507_instruction_rra(addr_absolute_x());
     break;
 
   case 0x68:
@@ -508,6 +632,22 @@ int mos6507_decode() {
     mos6507_instruction_sta(mos6507_addr_indirect_x());
     break;
 
+  case 0x83:
+    mos6507_instruction_sax(mos6507_addr_indirect_x());
+    break;
+
+  case 0x87:
+    mos6507_instruction_sax(addr_zero_page());
+    break;
+
+  case 0x8f:
+    mos6507_instruction_sax(addr_absolute());
+    break;
+
+  case 0x97:
+    mos6507_instruction_sax(addr_zero_page_y());
+    break;
+
   case 0x84:
     mos6507_instruction_sty(addr_zero_page());
     break;
@@ -528,6 +668,10 @@ int mos6507_decode() {
     mos6507_instruction_txa();
     break;
 
+  case 0x8b:
+    mos6507_instruction_ane(data_immediate());
+    break;
+
   case 0x8c:
     mos6507_instruction_sty(addr_absolute());
     break;
@@ -546,6 +690,10 @@ int mos6507_decode() {
 
   case 0x91:
     mos6507_instruction_sta(mos6507_addr_indirect_y());
+    break;
+
+  case 0x93:
+    mos6507_instruction_sha(mos6507_addr_indirect_y());
     break;
 
   case 0x94:
@@ -576,6 +724,14 @@ int mos6507_decode() {
     mos6507_instruction_sta(addr_absolute_x());
     break;
 
+  case 0x9b:
+    mos6507_instruction_tas(addr_absolute_y());
+    break;
+
+  case 0x9f:
+    mos6507_instruction_sha(addr_absolute_x());
+    break;
+
   case 0xa0:
     mos6507_instruction_ldy(data_immediate());
     break;
@@ -586,6 +742,30 @@ int mos6507_decode() {
 
   case 0xa2:
     mos6507_instruction_ldx(data_immediate());
+    break;
+
+  case 0xa3:
+    mos6507_instruction_lax(bus_read(mos6507_addr_indirect_x()));
+    break;
+
+  case 0xa7:
+    mos6507_instruction_lax(bus_read(addr_zero_page()));
+    break;
+
+  case 0xaf:
+    mos6507_instruction_lax(bus_read(addr_absolute()));
+    break;
+
+  case 0xb3:
+    mos6507_instruction_lax(bus_read(mos6507_addr_indirect_y()));
+    break;
+
+  case 0xb7:
+    mos6507_instruction_lax(bus_read(addr_zero_page_y()));
+    break;
+
+  case 0xbf:
+    mos6507_instruction_lax(bus_read(addr_absolute_y()));
     break;
 
   case 0xa4:
@@ -656,6 +836,10 @@ int mos6507_decode() {
     mos6507_instruction_tsx();
     break;
 
+  case 0xbb:
+    mos6507_instruction_las(data_absolute_y());
+    break;
+
   case 0xbc:
     mos6507_instruction_ldy(data_absolute_x());
     break;
@@ -676,6 +860,10 @@ int mos6507_decode() {
     mos6507_instruction_cmp(data_indirect_x());
     break;
 
+  case 0xc3:
+    mos6507_instruction_dcp(mos6507_addr_indirect_x());
+    break;
+
   case 0xc4:
     mos6507_instruction_cpy(data_zero_page());
     break;
@@ -686,6 +874,10 @@ int mos6507_decode() {
 
   case 0xc6:
     mos6507_instruction_dec(addr_zero_page());
+    break;
+
+  case 0xc7:
+    mos6507_instruction_dcp(addr_zero_page());
     break;
 
   case 0xc8:
@@ -700,6 +892,10 @@ int mos6507_decode() {
     mos6507_instruction_dex();
     break;
 
+  case 0xcb:
+    mos6507_instruction_sbx(data_immediate());
+    break;
+
   case 0xcc:
     mos6507_instruction_cpy(data_absolute());
     break;
@@ -712,12 +908,20 @@ int mos6507_decode() {
     mos6507_instruction_dec(addr_absolute());
     break;
 
+  case 0xcf:
+    mos6507_instruction_dcp(addr_absolute());
+    break;
+
   case 0xd0:
     mos6507_instruction_bne(mos6507_addr_relative());
     break;
 
   case 0xd1:
     mos6507_instruction_cmp(data_indirect_y());
+    break;
+
+  case 0xd3:
+    mos6507_instruction_dcp(mos6507_addr_indirect_y());
     break;
 
   case 0xd5:
@@ -728,12 +932,20 @@ int mos6507_decode() {
     mos6507_instruction_dec(addr_zero_page_x());
     break;
 
+  case 0xd7:
+    mos6507_instruction_dcp(addr_zero_page_x());
+    break;
+
   case 0xd8:
     mos6507_instruction_cld();
     break;
 
   case 0xd9:
     mos6507_instruction_cmp(data_absolute_y());
+    break;
+
+  case 0xdb:
+    mos6507_instruction_dcp(addr_absolute_y());
     break;
 
   case 0xdd:
@@ -744,12 +956,20 @@ int mos6507_decode() {
     mos6507_instruction_dec(addr_absolute_x());
     break;
 
+  case 0xdf:
+    mos6507_instruction_dcp(addr_absolute_x());
+    break;
+
   case 0xe0:
     mos6507_instruction_cpx(data_immediate());
     break;
 
   case 0xe1:
     mos6507_instruction_sbc(data_indirect_x());
+    break;
+
+  case 0xe3:
+    mos6507_instruction_isc(mos6507_addr_indirect_x());
     break;
 
   case 0xe4:
@@ -762,6 +982,10 @@ int mos6507_decode() {
 
   case 0xe6:
     mos6507_instruction_inc(addr_zero_page());
+    break;
+
+  case 0xe7:
+    mos6507_instruction_isc(addr_zero_page());
     break;
 
   case 0xe8:
@@ -788,12 +1012,20 @@ int mos6507_decode() {
     mos6507_instruction_inc(addr_absolute());
     break;
 
+  case 0xef:
+    mos6507_instruction_isc(addr_absolute());
+    break;
+
   case 0xf0:
     mos6507_instruction_beq(mos6507_addr_relative());
     break;
 
   case 0xf1:
     mos6507_instruction_sbc(data_indirect_y());
+    break;
+
+  case 0xf3:
+    mos6507_instruction_isc(mos6507_addr_indirect_y());
     break;
 
   case 0xf5:
@@ -804,6 +1036,10 @@ int mos6507_decode() {
     mos6507_instruction_inc(addr_zero_page_x());
     break;
 
+  case 0xf7:
+    mos6507_instruction_isc(addr_zero_page_x());
+    break;
+
   case 0xf8:
     mos6507_instruction_sed();
     break;
@@ -812,12 +1048,20 @@ int mos6507_decode() {
     mos6507_instruction_sbc(data_absolute_y());
     break;
 
+  case 0xfb:
+    mos6507_instruction_isc(addr_absolute_y());
+    break;
+
   case 0xfd:
     mos6507_instruction_sbc(data_absolute_x());
     break;
 
   case 0xfe:
     mos6507_instruction_inc(addr_absolute_x());
+    break;
+
+  case 0xff:
+    mos6507_instruction_isc(addr_absolute_x());
     break;
 
   default:
@@ -1645,6 +1889,180 @@ void mos6507_instruction_sty(unsigned short addr) {
   Stores the contents of the Y register into memory.
   */
   bus_write(addr, index_register_y);
+}
+
+void mos6507_instruction_slo(unsigned short addr) {
+  /*
+  SLO - Store ASL and ORA
+
+  M = M << 1, C = bit 7 of M, A = A | M
+  Shift memory left, then OR accumulator with memory.
+  */
+  mos6507_instruction_asl(addr);
+  mos6507_instruction_ora(bus_read(addr));
+}
+
+void mos6507_instruction_sax(unsigned short addr) {
+  /*
+  SAX - Store Accumulator AND X Register
+
+  M = A & X
+  Stores the result of the accumulator AND the X register into memory.
+  */
+  bus_write(addr, accumulator & index_register_x);
+}
+
+void mos6507_instruction_lax(unsigned char data) {
+  /*
+  LAX - Load Accumulator and X Register
+
+  A, X = M
+  Loads both the accumulator and X register with the value from memory.
+  */
+  mos6507_instruction_lda(data);
+  mos6507_instruction_ldx(data);
+}
+
+void mos6507_instruction_dcp(unsigned short addr) {
+  /*
+  DCP - Decrement Memory and Compare
+
+  M = M - 1, A - M
+  Decrements memory, then compares accumulator with memory.
+  */
+  mos6507_instruction_dec(addr);
+  mos6507_instruction_cmp(bus_read(addr));
+}
+
+void mos6507_instruction_isc(unsigned short addr) {
+  /*
+  ISC - Increment Memory and Subtract with Carry
+
+  M = M + 1, A = A - M - (1 - C)
+  Increments memory, then subtracts memory from accumulator with borrow.
+  */
+  mos6507_instruction_inc(addr);
+  mos6507_instruction_sbc(bus_read(addr));
+}
+
+void mos6507_instruction_rla(unsigned short addr) {
+  /*
+  RLA - Rotate Left and AND
+
+  M = M << 1 | C, A = A & M
+  Rotates memory left, then ANDs accumulator with memory.
+  */
+  mos6507_instruction_rol(addr);
+  mos6507_instruction_and(bus_read(addr));
+}
+
+void mos6507_instruction_sre(unsigned short addr) {
+  /*
+  SRE - Shift Right and Exclusive OR
+
+  M = M >> 1, A = A ^ M
+  Shifts memory right, then EORs accumulator with memory.
+  */
+  mos6507_instruction_lsr(addr);
+  mos6507_instruction_eor(bus_read(addr));
+}
+
+void mos6507_instruction_rra(unsigned short addr) {
+  /*
+  RRA - Rotate Right and Add with Carry
+
+  M = M >> 1 | C, A = A + M + C
+  Rotates memory right, then adds memory to accumulator with carry.
+  */
+  mos6507_instruction_ror(addr);
+  mos6507_instruction_adc(bus_read(addr));
+}
+
+void mos6507_instruction_anc(unsigned char data) {
+  /*
+  ANC - AND Memory with Accumulator (Immediate)
+
+  A = A & M, C = bit 7 of A
+  AND memory with accumulator, then set carry to bit 7 of result.
+  */
+  accumulator &= data;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+  if (accumulator & 0x80) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+}
+
+void mos6507_instruction_alr(unsigned char data) {
+  /*
+  ALR - AND Memory with Accumulator and LSR (Immediate)
+
+  A = (A & M) >> 1, C = bit 0 of (A & M)
+  AND memory with accumulator, then shift right.
+  */
+  accumulator &= data;
+  if (accumulator & 1) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+  accumulator >>= 1;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_ane(unsigned char data) {
+  /*
+  ANE - AND X Register with Accumulator and Memory (Immediate)
+
+  A = (A | constant) & X & M
+  AND accumulator with memory and X register, with a magic constant.
+  */
+  accumulator = (accumulator | 0xee) & index_register_x & data;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_sha(unsigned short addr) {
+  /*
+  SHA - Store Accumulator AND X Register AND High Byte of Address
+
+  M = A & X & H
+  Stores the result of the accumulator AND the X register AND the high byte of the address into memory.
+  */
+  unsigned char high_byte = (addr >> 8);
+  bus_write(addr, accumulator & index_register_x & high_byte);
+}
+
+void mos6507_instruction_tas(unsigned short addr) {
+  /*
+  TAS - Transfer Accumulator AND X Register to Stack Pointer, and store in memory.
+
+  S = A & X, M = S & H
+  */
+  stack_pointer = accumulator & index_register_x;
+  bus_write(addr, stack_pointer & (addr >> 8));
+}
+
+void mos6507_instruction_las(unsigned char data) {
+  /*
+  LAS - Load Accumulator, X Register, and Stack Pointer
+
+  A = X = S = (M & S)
+  */
+  accumulator = index_register_x = stack_pointer = (data & stack_pointer);
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_sbx(unsigned char data) {
+  /*
+  SBX - Subtract Memory from Accumulator AND X Register
+
+  X = (A & X) - M
+  */
+  unsigned char val = (accumulator & index_register_x);
+  if (val >= data) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+  index_register_x = val - data;
+  mos6507_check_negative(index_register_x);
+  mos6507_check_zero(index_register_x);
 }
 
 void mos6507_instruction_tax() {
