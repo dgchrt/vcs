@@ -129,7 +129,7 @@ unsigned short addr_zero_page() {
   $0000 to $00FF) where the most significant byte of the address is always zero.
   */
   mos6507_fetch();
-  return (0x0000 | instruction) & BUS_MEMORY_MASK;
+  return instruction & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_zero_page_x() {

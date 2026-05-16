@@ -8,18 +8,18 @@
 void vcs_cycle() {
   while (running) {
     mos6507_fetch();
-    int instruction = mos6507_decode();
+    int invalid_instruction = mos6507_decode();
 
-    if (instruction > 0) {
+    if (invalid_instruction > 0) {
       running = 0;
-      printf("Instruction %x not implemented.\n", instruction);
+      printf("Instruction %x not implemented.\n", invalid_instruction);
     }
 
     vcs_update();
   }
 }
 
-void vcs_load_rom(char path[]) {
+void vcs_load_rom(const char path[]) {
   FILE *file;
   unsigned char byte;
   unsigned short i;
