@@ -1,5 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
+SDL_CFLAGS = $(shell sdl2-config --cflags)
+SDL_LIBS = $(shell sdl2-config --libs)
 BUILD_DIR = build
 DIST_DIR = dist
 
@@ -12,14 +14,11 @@ TARGET = $(DIST_DIR)/vcs
 
 all: $(TARGET)
 
-format:
-	clang-format -i *.c *.h
-
-lint:
-	cppcheck --enable=all --std=c11 --suppress=missingIncludeSystem .
-
 $(TARGET): $(OBJS) | $(DIST_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(SDL_LIBS)
+
+$(BUILD_DIR)/hal.o: hal.c $(HDRS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SDL_CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.c $(HDRS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,10 +1,23 @@
-#ifndef CONIO_H
-#define CONIO_H
+#ifndef HAL_H
+#define HAL_H
 
+#include <stdint.h>
+#include <stddef.h>
+
+// Console I/O
 void clrscr(void);
-int kbhit(void);
 int getch(void);
+int kbhit(void);
 
-#define TERM_CLEAR_SCREEN "\033[H\033[J"
+// Graphics
+int hal_init(const char* title, int width, int height);
+void hal_present(const uint32_t* buffer, int width, int height);
+int hal_handle_events(void);
+void hal_cleanup(void);
 
-#endif /* CONIO_H */
+// Host I/O
+void hal_log(const char* message);
+void hal_exit(int code);
+int hal_load(const char* path, uint8_t* buffer, size_t size);
+
+#endif
