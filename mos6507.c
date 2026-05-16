@@ -1,8 +1,6 @@
 #include "mos6507.h"
 #include "bus.h"
 #include "debug.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 unsigned char accumulator;
 unsigned char index_register_x;
@@ -216,7 +214,7 @@ unsigned char data_zero_page_x() { return bus_read(addr_zero_page_x()); }
 
 unsigned char data_zero_page_y() { return bus_read(addr_zero_page_y()); }
 
-void mos6507_decode() {
+int mos6507_decode() {
   switch (instruction) {
   case 0x00:
     mos6507_instruction_brk();
@@ -823,9 +821,11 @@ void mos6507_decode() {
     break;
 
   default:
-    mos6507_not_implemented();
+    return 1;
     break;
   }
+
+  return 0;
 }
 
 void mos6507_fetch() {
@@ -1720,12 +1720,6 @@ void mos6507_instruction_tya() {
   accumulator = index_register_y;
   mos6507_check_negative(accumulator);
   mos6507_check_zero(accumulator);
-}
-
-void mos6507_not_implemented() {
-  running = 0;
-  printf("Instruction %x not implemented.\n", instruction);
-  exit(1);
 }
 
 unsigned short mos6507_operand_2bytes() {

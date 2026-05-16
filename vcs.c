@@ -8,7 +8,13 @@
 void vcs_cycle() {
   while (running) {
     mos6507_fetch();
-    mos6507_decode();
+    int instruction = mos6507_decode();
+
+    if (instruction > 0) {
+      running = 0;
+      printf("Instruction %x not implemented.\n", instruction);
+    }
+
     vcs_update();
   }
 }
