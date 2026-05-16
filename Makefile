@@ -8,9 +8,12 @@ HDRS = $(wildcard *.h)
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 TARGET = $(DIST_DIR)/vcs
 
-.PHONY: all clean lint
+.PHONY: all clean format lint
 
 all: $(TARGET)
+
+format:
+	clang-format -i *.c *.h
 
 lint:
 	cppcheck --enable=all --std=c11 --suppress=missingIncludeSystem .
