@@ -1178,6 +1178,35 @@ void mos6507_instruction_adc(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
+void mos6507_instruction_alr(unsigned char data) {
+  /*
+  ALR - AND Memory with Accumulator and LSR (Immediate)
+
+  A = (A & M) >> 1, C = bit 0 of (A & M)
+  AND memory with accumulator, then shift right.
+  */
+  accumulator &= data;
+  if (accumulator & 1) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+  accumulator >>= 1;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_anc(unsigned char data) {
+  /*
+  ANC - AND Memory with Accumulator (Immediate)
+
+  A = A & M, C = bit 7 of A
+  AND memory with accumulator, then set carry to bit 7 of result.
+  */
+  accumulator &= data;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+  if (accumulator & 0x80) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+}
+
 void mos6507_instruction_and(unsigned char data) {
   /*
   AND - Logical AND
@@ -1189,6 +1218,18 @@ void mos6507_instruction_and(unsigned char data) {
   accumulator &= data;
   mos6507_check_negative(data);
   mos6507_check_zero(data);
+}
+
+void mos6507_instruction_ane(unsigned char data) {
+  /*
+  ANE - AND X Register with Accumulator and Memory (Immediate)
+
+  A = (A | constant) & X & M
+  AND accumulator with memory and X register, with a magic constant.
+  */
+  accumulator = (accumulator | 0xee) & index_register_x & data;
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
 }
 
 void mos6507_instruction_asl(unsigned short addr) {
@@ -1464,6 +1505,17 @@ void mos6507_instruction_cpy(unsigned char data) {
   }
 }
 
+void mos6507_instruction_dcp(unsigned short addr) {
+  /*
+  DCP - Decrement Memory and Compare
+
+  M = M - 1, A - M
+  Decrements memory, then compares accumulator with memory.
+  */
+  mos6507_instruction_dec(addr);
+  mos6507_instruction_cmp(bus_read(addr));
+}
+
 void mos6507_instruction_dec(unsigned short addr) {
   /*
   DEC - Decrement Memory
@@ -1557,6 +1609,17 @@ void mos6507_instruction_iny() {
   mos6507_check_zero(index_register_y);
 }
 
+void mos6507_instruction_isc(unsigned short addr) {
+  /*
+  ISC - Increment Memory and Subtract with Carry
+
+  M = M + 1, A = A - M - (1 - C)
+  Increments memory, then subtracts memory from accumulator with borrow.
+  */
+  mos6507_instruction_inc(addr);
+  mos6507_instruction_sbc(bus_read(addr));
+}
+
 void mos6507_instruction_jmp(unsigned short addr) {
   /*
   JMP - Jump
@@ -1576,6 +1639,28 @@ void mos6507_instruction_jsr(unsigned short addr) {
   mos6507_stack_push(program_counter);
   mos6507_stack_push(program_counter >> BYTE_SIZE);
   program_counter = addr;
+}
+
+void mos6507_instruction_las(unsigned char data) {
+  /*
+  LAS - Load Accumulator, X Register, and Stack Pointer
+
+  A = X = S = (M & S)
+  */
+  accumulator = index_register_x = stack_pointer = (data & stack_pointer);
+  mos6507_check_negative(accumulator);
+  mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_lax(unsigned char data) {
+  /*
+  LAX - Load Accumulator and X Register
+
+  A, X = M
+  Loads both the accumulator and X register with the value from memory.
+  */
+  mos6507_instruction_lda(data);
+  mos6507_instruction_ldx(data);
 }
 
 void mos6507_instruction_lda(unsigned char data) {
@@ -1712,6 +1797,17 @@ void mos6507_instruction_plp() {
   processor_status = mos6507_stack_pull();
 }
 
+void mos6507_instruction_rla(unsigned short addr) {
+  /*
+  RLA - Rotate Left and AND
+
+  M = M << 1 | C, A = A & M
+  Rotates memory left, then ANDs accumulator with memory.
+  */
+  mos6507_instruction_rol(addr);
+  mos6507_instruction_and(bus_read(addr));
+}
+
 void mos6507_instruction_rol(unsigned short addr) {
   /*
   ROL - Rotate Left
@@ -1782,6 +1878,17 @@ void mos6507_instruction_ror(unsigned short addr) {
   }
 }
 
+void mos6507_instruction_rra(unsigned short addr) {
+  /*
+  RRA - Rotate Right and Add with Carry
+
+  M = M >> 1 | C, A = A + M + C
+  Rotates memory right, then adds memory to accumulator with carry.
+  */
+  mos6507_instruction_ror(addr);
+  mos6507_instruction_adc(bus_read(addr));
+}
+
 void mos6507_instruction_rti() {
   /*
   RTI - Return from Interrupt
@@ -1803,6 +1910,16 @@ void mos6507_instruction_rts() {
   */
   program_counter = mos6507_stack_pull() << BYTE_SIZE;
   program_counter |= mos6507_stack_pull();
+}
+
+void mos6507_instruction_sax(unsigned short addr) {
+  /*
+  SAX - Store Accumulator AND X Register
+
+  M = A & X
+  Stores the result of the accumulator AND the X register into memory.
+  */
+  bus_write(addr, accumulator & index_register_x);
 }
 
 void mos6507_instruction_sbc(unsigned char data) {
@@ -1829,6 +1946,20 @@ void mos6507_instruction_sbc(unsigned char data) {
   accumulator -= subtract;
   mos6507_check_negative(accumulator);
   mos6507_check_zero(accumulator);
+}
+
+void mos6507_instruction_sbx(unsigned char data) {
+  /*
+  SBX - Subtract Memory from Accumulator AND X Register
+
+  X = (A & X) - M
+  */
+  unsigned char val = (accumulator & index_register_x);
+  if (val >= data) mos6507_flag_carry_set();
+  else mos6507_flag_carry_unset();
+  index_register_x = val - data;
+  mos6507_check_negative(index_register_x);
+  mos6507_check_zero(index_register_x);
 }
 
 void mos6507_instruction_sec() {
@@ -1861,6 +1992,39 @@ void mos6507_instruction_sei() {
   mos6507_flag_interrupt_set();
 }
 
+void mos6507_instruction_sha(unsigned short addr) {
+  /*
+  SHA - Store Accumulator AND X Register AND High Byte of Address
+
+  M = A & X & H
+  Stores the result of the accumulator AND the X register AND the high byte of the address into memory.
+  */
+  unsigned char high_byte = (addr >> 8);
+  bus_write(addr, accumulator & index_register_x & high_byte);
+}
+
+void mos6507_instruction_slo(unsigned short addr) {
+  /*
+  SLO - Store ASL and ORA
+
+  M = M << 1, C = bit 7 of M, A = A | M
+  Shift memory left, then OR accumulator with memory.
+  */
+  mos6507_instruction_asl(addr);
+  mos6507_instruction_ora(bus_read(addr));
+}
+
+void mos6507_instruction_sre(unsigned short addr) {
+  /*
+  SRE - Shift Right and Exclusive OR
+
+  M = M >> 1, A = A ^ M
+  Shifts memory right, then EORs accumulator with memory.
+  */
+  mos6507_instruction_lsr(addr);
+  mos6507_instruction_eor(bus_read(addr));
+}
+
 void mos6507_instruction_sta(unsigned short addr) {
   /*
   STA - Store Accumulator
@@ -1891,145 +2055,6 @@ void mos6507_instruction_sty(unsigned short addr) {
   bus_write(addr, index_register_y);
 }
 
-void mos6507_instruction_slo(unsigned short addr) {
-  /*
-  SLO - Store ASL and ORA
-
-  M = M << 1, C = bit 7 of M, A = A | M
-  Shift memory left, then OR accumulator with memory.
-  */
-  mos6507_instruction_asl(addr);
-  mos6507_instruction_ora(bus_read(addr));
-}
-
-void mos6507_instruction_sax(unsigned short addr) {
-  /*
-  SAX - Store Accumulator AND X Register
-
-  M = A & X
-  Stores the result of the accumulator AND the X register into memory.
-  */
-  bus_write(addr, accumulator & index_register_x);
-}
-
-void mos6507_instruction_lax(unsigned char data) {
-  /*
-  LAX - Load Accumulator and X Register
-
-  A, X = M
-  Loads both the accumulator and X register with the value from memory.
-  */
-  mos6507_instruction_lda(data);
-  mos6507_instruction_ldx(data);
-}
-
-void mos6507_instruction_dcp(unsigned short addr) {
-  /*
-  DCP - Decrement Memory and Compare
-
-  M = M - 1, A - M
-  Decrements memory, then compares accumulator with memory.
-  */
-  mos6507_instruction_dec(addr);
-  mos6507_instruction_cmp(bus_read(addr));
-}
-
-void mos6507_instruction_isc(unsigned short addr) {
-  /*
-  ISC - Increment Memory and Subtract with Carry
-
-  M = M + 1, A = A - M - (1 - C)
-  Increments memory, then subtracts memory from accumulator with borrow.
-  */
-  mos6507_instruction_inc(addr);
-  mos6507_instruction_sbc(bus_read(addr));
-}
-
-void mos6507_instruction_rla(unsigned short addr) {
-  /*
-  RLA - Rotate Left and AND
-
-  M = M << 1 | C, A = A & M
-  Rotates memory left, then ANDs accumulator with memory.
-  */
-  mos6507_instruction_rol(addr);
-  mos6507_instruction_and(bus_read(addr));
-}
-
-void mos6507_instruction_sre(unsigned short addr) {
-  /*
-  SRE - Shift Right and Exclusive OR
-
-  M = M >> 1, A = A ^ M
-  Shifts memory right, then EORs accumulator with memory.
-  */
-  mos6507_instruction_lsr(addr);
-  mos6507_instruction_eor(bus_read(addr));
-}
-
-void mos6507_instruction_rra(unsigned short addr) {
-  /*
-  RRA - Rotate Right and Add with Carry
-
-  M = M >> 1 | C, A = A + M + C
-  Rotates memory right, then adds memory to accumulator with carry.
-  */
-  mos6507_instruction_ror(addr);
-  mos6507_instruction_adc(bus_read(addr));
-}
-
-void mos6507_instruction_anc(unsigned char data) {
-  /*
-  ANC - AND Memory with Accumulator (Immediate)
-
-  A = A & M, C = bit 7 of A
-  AND memory with accumulator, then set carry to bit 7 of result.
-  */
-  accumulator &= data;
-  mos6507_check_negative(accumulator);
-  mos6507_check_zero(accumulator);
-  if (accumulator & 0x80) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
-}
-
-void mos6507_instruction_alr(unsigned char data) {
-  /*
-  ALR - AND Memory with Accumulator and LSR (Immediate)
-
-  A = (A & M) >> 1, C = bit 0 of (A & M)
-  AND memory with accumulator, then shift right.
-  */
-  accumulator &= data;
-  if (accumulator & 1) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
-  accumulator >>= 1;
-  mos6507_check_negative(accumulator);
-  mos6507_check_zero(accumulator);
-}
-
-void mos6507_instruction_ane(unsigned char data) {
-  /*
-  ANE - AND X Register with Accumulator and Memory (Immediate)
-
-  A = (A | constant) & X & M
-  AND accumulator with memory and X register, with a magic constant.
-  */
-  accumulator = (accumulator | 0xee) & index_register_x & data;
-  mos6507_check_negative(accumulator);
-  mos6507_check_zero(accumulator);
-}
-
-void mos6507_instruction_sha(unsigned short addr) {
-  /*
-  SHA - Store Accumulator AND X Register AND High Byte of Address
-
-  M = A & X & H
-  Stores the result of the accumulator AND the X register AND the high byte of the address into memory.
-  */
-  unsigned char high_byte = (addr >> 8);
-  bus_write(addr, accumulator & index_register_x & high_byte);
-}
-
 void mos6507_instruction_tas(unsigned short addr) {
   /*
   TAS - Transfer Accumulator AND X Register to Stack Pointer, and store in memory.
@@ -2038,31 +2063,6 @@ void mos6507_instruction_tas(unsigned short addr) {
   */
   stack_pointer = accumulator & index_register_x;
   bus_write(addr, stack_pointer & (addr >> 8));
-}
-
-void mos6507_instruction_las(unsigned char data) {
-  /*
-  LAS - Load Accumulator, X Register, and Stack Pointer
-
-  A = X = S = (M & S)
-  */
-  accumulator = index_register_x = stack_pointer = (data & stack_pointer);
-  mos6507_check_negative(accumulator);
-  mos6507_check_zero(accumulator);
-}
-
-void mos6507_instruction_sbx(unsigned char data) {
-  /*
-  SBX - Subtract Memory from Accumulator AND X Register
-
-  X = (A & X) - M
-  */
-  unsigned char val = (accumulator & index_register_x);
-  if (val >= data) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
-  index_register_x = val - data;
-  mos6507_check_negative(index_register_x);
-  mos6507_check_zero(index_register_x);
 }
 
 void mos6507_instruction_tax() {

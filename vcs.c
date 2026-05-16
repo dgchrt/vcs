@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void vcs_update() {
+  if (kbhit() && getch() == KEY_ESC) {
+    running = 0;
+  }
+}
+
 void vcs_cycle() {
   while (running) {
     mos6507_fetch();
@@ -44,12 +50,6 @@ void vcs_load_rom(const char path[]) {
       BUS_MEMORY_MASK;
   // clrscr();
   vcs_cycle();
-}
-
-void vcs_update() {
-  if (kbhit() && getch() == KEY_ESC) {
-    running = 0;
-  }
 }
 
 int main(int argc, char *argv[]) {
