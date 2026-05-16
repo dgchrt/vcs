@@ -1,6 +1,6 @@
+#include "conio.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "conio.h"
 
 #define BYTE_SIZE 8
 #define KEY_ESC 27
