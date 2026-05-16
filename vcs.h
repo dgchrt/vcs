@@ -4,8 +4,6 @@
 
 #define BYTE_SIZE 8
 #define KEY_ESC 27
-#define MEMORY_SIZE 0x2000
-#define MEMORY_MASK (MEMORY_SIZE - 1)
 #define VECTOR_RESET 0x1ffc
 #define VECTOR_IRQ 0x1ffe
 /*
@@ -30,7 +28,6 @@ extern unsigned char accumulator;
 extern unsigned char index_register_x;
 extern unsigned char index_register_y;
 extern unsigned char instruction;
-extern unsigned char memory[MEMORY_SIZE];
 extern unsigned char processor_status;
 extern unsigned short program_counter;
 extern unsigned char registers[REGISTER_SIZE];

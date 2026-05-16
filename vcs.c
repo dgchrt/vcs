@@ -1,11 +1,11 @@
 #include "vcs.h"
 #include "debug.h"
+#include "bus.h"
 
 unsigned char accumulator;
 unsigned char index_register_x;
 unsigned char index_register_y;
 unsigned char instruction;
-unsigned char memory[MEMORY_SIZE];
 unsigned char processor_status = 36;
 unsigned short program_counter;
 unsigned char registers[REGISTER_SIZE];
@@ -19,7 +19,7 @@ unsigned short addr_absolute() {
 
 	Instructions using absolute addressing contain a full 16 bit address to identify the target location.
 	*/
-	return operand_2bytes() & MEMORY_MASK;
+	return operand_2bytes() & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_absolute_x() {
@@ -29,7 +29,7 @@ unsigned short addr_absolute_x() {
 	The address to be accessed by an instruction using X register indexed absolute addressing is computed by taking the 16 bit address from the instruction and added the contents of the X register.
 	For example if X contains $92 then an STA $2000,X instruction will store the accumulator at $2092 (e.g. $2000 + $92).
 	*/
-	return (operand_2bytes() + index_register_x) & MEMORY_MASK;
+	return (operand_2bytes() + index_register_x) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_absolute_y() {
@@ -38,7 +38,7 @@ unsigned short addr_absolute_y() {
 
 	The Y register indexed absolute addressing mode is the same as the previous mode only with the contents of the Y register added to the 16 bit address from the instruction.
 	*/
-	return (operand_2bytes() + index_register_y) & MEMORY_MASK;
+	return (operand_2bytes() + index_register_y) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_indirect() {
@@ -52,9 +52,9 @@ unsigned short addr_indirect() {
 	unsigned char byte1;
 	unsigned char byte2;
 
-	byte1 = memory[operand_2bytes()];
-	byte2 = memory[operand_2bytes() + 1];
-	return (byte1 | (byte2 << BYTE_SIZE)) & MEMORY_MASK;
+	byte1 = bus_read(operand_2bytes());
+	byte2 = bus_read(operand_2bytes() + 1);
+	return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_indirect_x() {
@@ -70,9 +70,9 @@ unsigned short addr_indirect_x() {
 
 	vcs_fetch();
 	address = instruction + index_register_x;
-	byte1 = memory[address];
-	byte2 = memory[address + 1];
-	return (byte1 | (byte2 << BYTE_SIZE)) & MEMORY_MASK;
+	byte1 = bus_read(address);
+	byte2 = bus_read(address + 1);
+	return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_indirect_y() {
@@ -87,9 +87,9 @@ unsigned short addr_indirect_y() {
 	unsigned char byte2;
 
 	vcs_fetch();
-	byte1 = memory[instruction];
-	byte2 = memory[instruction + 1];
-	return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & MEMORY_MASK;
+	byte1 = bus_read(instruction);
+	byte2 = bus_read(instruction + 1);
+	return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & BUS_MEMORY_MASK;
 }
 
 signed char addr_relative() {
@@ -111,7 +111,7 @@ unsigned short addr_zero_page() {
 	This limits it to addressing only the first 256 bytes of memory (e.g. $0000 to $00FF) where the most significant byte of the address is always zero.
 	*/
 	vcs_fetch();
-	return (0x0000 | instruction) & MEMORY_MASK;
+	return (0x0000 | instruction) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_zero_page_x() {
@@ -124,7 +124,7 @@ unsigned short addr_zero_page_x() {
 	If we repeat the last example but with $FF in the X register then the accumulator will be loaded from $007F (e.g. $80 + $FF => $7F) and not $017F.
 	*/
 	vcs_fetch();
-	return (instruction + index_register_x) & MEMORY_MASK;
+	return (instruction + index_register_x) & BUS_MEMORY_MASK;
 }
 
 unsigned short addr_zero_page_y() {
@@ -135,7 +135,7 @@ unsigned short addr_zero_page_y() {
 	This mode can only be used with the LDX and STX instructions.
 	*/
 	vcs_fetch();
-	return (instruction + index_register_y) & MEMORY_MASK;
+	return (instruction + index_register_y) & BUS_MEMORY_MASK;
 }
 
 void check_negative(unsigned char data) {
@@ -171,15 +171,15 @@ void vcs_cycle() {
 }
 
 unsigned char data_absolute() {
-	return memory[addr_absolute()];
+	return bus_read(addr_absolute());
 }
 
 unsigned char data_absolute_x() {
-	return memory[addr_absolute_x()];
+	return bus_read(addr_absolute_x());
 }
 
 unsigned char data_absolute_y() {
-	return memory[addr_absolute_y()];
+	return bus_read(addr_absolute_y());
 }
 
 unsigned char data_immediate() {
@@ -193,23 +193,23 @@ unsigned char data_immediate() {
 }
 
 unsigned char data_indirect_x() {
-	return memory[addr_indirect_x()];
+	return bus_read(addr_indirect_x());
 }
 
 unsigned char data_indirect_y() {
-	return memory[addr_indirect_y()];
+	return bus_read(addr_indirect_y());
 }
 
 unsigned char data_zero_page() {
-	return memory[addr_zero_page()];
+	return bus_read(addr_zero_page());
 }
 
 unsigned char data_zero_page_x() {
-	return memory[addr_zero_page_x()];
+	return bus_read(addr_zero_page_x());
 }
 
 unsigned char data_zero_page_y() {
-	return memory[addr_zero_page_y()];
+	return bus_read(addr_zero_page_y());
 }
 
 void vcs_decode() {
@@ -825,7 +825,7 @@ void vcs_decode() {
 }
 
 void vcs_fetch() {
-	instruction = memory[program_counter++];
+	instruction = bus_read(program_counter++);
 	debug_update(program_counter - 1, instruction, accumulator, index_register_x, index_register_y, stack_pointer, processor_status);
 }
 
@@ -949,23 +949,29 @@ void instruction_asl(unsigned short addr) {
 	Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 	The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations), setting the carry if the result will not fit in 8 bits.
 	*/
-	unsigned char *target;
+	unsigned char data;
 
 	if (addr) {
-		target = &memory[addr];
+		data = bus_read(addr);
 	} else {
-		target = &accumulator;
+		data = accumulator;
 	}
 
-	if (*target >> 7) {
+	if (data >> 7) {
 		flag_carry_set();
 	} else {
 		flag_carry_unset();
 	}
 
-	*target <<= 1;
-	check_negative(*target);
-	check_zero(*target);
+	data <<= 1;
+	check_negative(data);
+	check_zero(data);
+
+	if (addr) {
+		bus_write(addr, data);
+	} else {
+		accumulator = data;
+	}
 }
 
 void instruction_bcc(signed char addr) {
@@ -1068,7 +1074,7 @@ void instruction_brk() {
 	stack_push(program_counter);
 	stack_push(program_counter >> BYTE_SIZE);
 	stack_push(processor_status);
-	program_counter = (memory[VECTOR_IRQ] | (memory[VECTOR_IRQ + 1] << BYTE_SIZE)) & MEMORY_MASK;
+	program_counter = (bus_read(VECTOR_IRQ) | (bus_read(VECTOR_IRQ + 1) << BYTE_SIZE)) & BUS_MEMORY_MASK;
 	flag_break_set();
 }
 
@@ -1195,9 +1201,11 @@ void instruction_dec(unsigned short addr) {
 	M,Z,N = M-1
 	Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
 	*/
-	--memory[addr];
-	check_negative(memory[addr]);
-	check_zero(memory[addr]);
+	unsigned char data = bus_read(addr);
+	--data;
+	bus_write(addr, data);
+	check_negative(data);
+	check_zero(data);
 }
 
 void instruction_dex() {
@@ -1243,9 +1251,11 @@ void instruction_inc(unsigned short addr) {
 	M,Z,N = M+1
 	Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
 	*/
-	++memory[addr];
-	check_negative(memory[addr]);
-	check_zero(memory[addr]);
+	unsigned char data = bus_read(addr);
+	++data;
+	bus_write(addr, data);
+	check_negative(data);
+	check_zero(data);
 }
 
 void instruction_inx() {
@@ -1335,23 +1345,29 @@ void instruction_lsr(unsigned short addr) {
 	A,C,Z,N = A/2 or M,C,Z,N = M/2
 	Each of the bits in A or M is shift one place to the right. The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
 	*/
-	unsigned char *target;
+	unsigned char data;
 
 	if (addr) {
-		target = &memory[addr];
+		data = bus_read(addr);
 	} else {
-		target = &accumulator;
+		data = accumulator;
 	}
 
-	if (*target & 1) {
+	if (data & 1) {
 		flag_carry_set();
 	} else {
 		flag_carry_unset();
 	}
 
-	*target >>= 1;
-	check_negative(*target);
-	check_zero(*target);
+	data >>= 1;
+	check_negative(data);
+	check_zero(data);
+
+	if (addr) {
+		bus_write(addr, data);
+	} else {
+		accumulator = data;
+	}
 }
 
 void instruction_nop() {
@@ -1421,27 +1437,31 @@ void instruction_rol(unsigned short addr) {
 	Move each of the bits in either A or M one place to the left.
 	Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
 	*/
-	unsigned char carry;
-	unsigned char *target;
-
-	carry = flag_carry();
+	unsigned char carry_in = flag_carry();
+	unsigned char data;
 
 	if (addr) {
-		target = &memory[addr];
+		data = bus_read(addr);
 	} else {
-		target = &accumulator;
+		data = accumulator;
 	}
 
-	if (*target >> 7) {
+	if (data >> 7) {
 		flag_carry_set();
 	} else {
 		flag_carry_unset();
 	}
 
-	*target <<= 1;
-	*target |= carry;
-	check_negative(*target);
-	check_zero(*target);
+	data <<= 1;
+	data |= carry_in;
+	check_negative(data);
+	check_zero(data);
+
+	if (addr) {
+		bus_write(addr, data);
+	} else {
+		accumulator = data;
+	}
 }
 
 void instruction_ror(unsigned short addr) {
@@ -1451,27 +1471,31 @@ void instruction_ror(unsigned short addr) {
 	Move each of the bits in either A or M one place to the right.
 	Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
 	*/
-	unsigned char carry;
-	unsigned char *target;
-
-	carry = flag_carry();
+	unsigned char carry_in = flag_carry();
+	unsigned char data;
 
 	if (addr) {
-		target = &memory[addr];
+		data = bus_read(addr);
 	} else {
-		target = &accumulator;
+		data = accumulator;
 	}
 
-	if (*target & 1) {
+	if (data & 1) {
 		flag_carry_set();
 	} else {
 		flag_carry_unset();
 	}
 
-	*target >>= 1;
-	*target |= carry << 7;
-	check_negative(*target);
-	check_zero(*target);
+	data >>= 1;
+	data |= (carry_in << 7);
+	check_negative(data);
+	check_zero(data);
+
+	if (addr) {
+		bus_write(addr, data);
+	} else {
+		accumulator = data;
+	}
 }
 
 void instruction_rti() {
@@ -1559,7 +1583,7 @@ void instruction_sta(unsigned short addr) {
 	M = A
 	Stores the contents of the accumulator into memory.
 	*/
-	memory[addr] = accumulator;
+	bus_write(addr, accumulator);
 }
 
 void instruction_stx(unsigned short addr) {
@@ -1569,7 +1593,7 @@ void instruction_stx(unsigned short addr) {
 	M = X
 	Stores the contents of the X register into memory.
 	*/
-	memory[addr] = index_register_x;
+	bus_write(addr, index_register_x);
 }
 
 void instruction_sty(unsigned short addr) {
@@ -1579,7 +1603,7 @@ void instruction_sty(unsigned short addr) {
 	M = Y
 	Stores the contents of the Y register into memory.
 	*/
-	memory[addr] = index_register_y;
+	bus_write(addr, index_register_y);
 }
 
 void instruction_tax() {
@@ -1668,11 +1692,11 @@ void vcs_load_rom(char path[]) {
 	i = ROM_ADDRESS;
 
 	while (fread(&byte, 1, 1, file) == 1) {
-		memory[i++] = byte;
+		bus_write(i++, byte);
 	}
 
 	fclose(file);
-	program_counter = (memory[VECTOR_RESET] | (memory[VECTOR_RESET + 1] << BYTE_SIZE)) & MEMORY_MASK;
+	program_counter = (bus_read(VECTOR_RESET) | (bus_read(VECTOR_RESET + 1) << BYTE_SIZE)) & BUS_MEMORY_MASK;
 	// clrscr();
 	vcs_cycle();
 }
