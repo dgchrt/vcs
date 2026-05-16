@@ -1186,8 +1186,10 @@ void mos6507_instruction_alr(unsigned char data) {
   AND memory with accumulator, then shift right.
   */
   accumulator &= data;
-  if (accumulator & 1) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
+  if (accumulator & 1)
+    mos6507_flag_carry_set();
+  else
+    mos6507_flag_carry_unset();
   accumulator >>= 1;
   mos6507_check_negative(accumulator);
   mos6507_check_zero(accumulator);
@@ -1203,8 +1205,10 @@ void mos6507_instruction_anc(unsigned char data) {
   accumulator &= data;
   mos6507_check_negative(accumulator);
   mos6507_check_zero(accumulator);
-  if (accumulator & 0x80) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
+  if (accumulator & 0x80)
+    mos6507_flag_carry_set();
+  else
+    mos6507_flag_carry_unset();
 }
 
 void mos6507_instruction_and(unsigned char data) {
@@ -1955,8 +1959,10 @@ void mos6507_instruction_sbx(unsigned char data) {
   X = (A & X) - M
   */
   unsigned char val = (accumulator & index_register_x);
-  if (val >= data) mos6507_flag_carry_set();
-  else mos6507_flag_carry_unset();
+  if (val >= data)
+    mos6507_flag_carry_set();
+  else
+    mos6507_flag_carry_unset();
   index_register_x = val - data;
   mos6507_check_negative(index_register_x);
   mos6507_check_zero(index_register_x);
@@ -1997,7 +2003,8 @@ void mos6507_instruction_sha(unsigned short addr) {
   SHA - Store Accumulator AND X Register AND High Byte of Address
 
   M = A & X & H
-  Stores the result of the accumulator AND the X register AND the high byte of the address into memory.
+  Stores the result of the accumulator AND the X register AND the high byte of
+  the address into memory.
   */
   unsigned char high_byte = (addr >> 8);
   bus_write(addr, accumulator & index_register_x & high_byte);
@@ -2057,7 +2064,8 @@ void mos6507_instruction_sty(unsigned short addr) {
 
 void mos6507_instruction_tas(unsigned short addr) {
   /*
-  TAS - Transfer Accumulator AND X Register to Stack Pointer, and store in memory.
+  TAS - Transfer Accumulator AND X Register to Stack Pointer, and store in
+  memory.
 
   S = A & X, M = S & H
   */

@@ -1,6 +1,6 @@
 #include "vcs.h"
 #include "bus.h"
-#include "conio.h"
+#include "hal.h"
 #include "mos6507.h"
 #include <stdio.h>
 #include <stdlib.h>
