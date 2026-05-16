@@ -834,31 +834,49 @@ void mos6507_fetch() {
                index_register_y, stack_pointer, processor_status);
 }
 
-unsigned char mos6507_flag_break() { return mos6507_processor_status_flag(STATUS_BIT_BREAK); }
+unsigned char mos6507_flag_break() {
+  return mos6507_processor_status_flag(STATUS_BIT_BREAK);
+}
 
-void mos6507_flag_break_set() { mos6507_processor_status_flag_set(STATUS_BIT_BREAK); }
+void mos6507_flag_break_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_BREAK);
+}
 
-void mos6507_flag_break_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_BREAK); }
+void mos6507_flag_break_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_BREAK);
+}
 
-unsigned char mos6507_flag_carry() { return mos6507_processor_status_flag(STATUS_BIT_CARRY); }
+unsigned char mos6507_flag_carry() {
+  return mos6507_processor_status_flag(STATUS_BIT_CARRY);
+}
 
-void mos6507_flag_carry_set() { mos6507_processor_status_flag_set(STATUS_BIT_CARRY); }
+void mos6507_flag_carry_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_CARRY);
+}
 
-void mos6507_flag_carry_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_CARRY); }
+void mos6507_flag_carry_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_CARRY);
+}
 
 unsigned char mos6507_flag_decimal() {
   return mos6507_processor_status_flag(STATUS_BIT_DECIMAL);
 }
 
-void mos6507_flag_decimal_set() { mos6507_processor_status_flag_set(STATUS_BIT_DECIMAL); }
+void mos6507_flag_decimal_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_DECIMAL);
+}
 
-void mos6507_flag_decimal_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_DECIMAL); }
+void mos6507_flag_decimal_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_DECIMAL);
+}
 
 unsigned char mos6507_flag_interrupt() {
   return mos6507_processor_status_flag(STATUS_BIT_INTERRUPT);
 }
 
-void mos6507_flag_interrupt_set() { mos6507_processor_status_flag_set(STATUS_BIT_INTERRUPT); }
+void mos6507_flag_interrupt_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_INTERRUPT);
+}
 
 void mos6507_flag_interrupt_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_INTERRUPT);
@@ -868,23 +886,37 @@ unsigned char mos6507_flag_negative() {
   return mos6507_processor_status_flag(STATUS_BIT_NEGATIVE);
 }
 
-void mos6507_flag_negative_set() { mos6507_processor_status_flag_set(STATUS_BIT_NEGATIVE); }
+void mos6507_flag_negative_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_NEGATIVE);
+}
 
-void mos6507_flag_negative_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_NEGATIVE); }
+void mos6507_flag_negative_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_NEGATIVE);
+}
 
 unsigned char mos6507_flag_overflow() {
   return mos6507_processor_status_flag(STATUS_BIT_OVERFLOW);
 }
 
-void mos6507_flag_overflow_set() { mos6507_processor_status_flag_set(STATUS_BIT_OVERFLOW); }
+void mos6507_flag_overflow_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_OVERFLOW);
+}
 
-void mos6507_flag_overflow_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_OVERFLOW); }
+void mos6507_flag_overflow_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_OVERFLOW);
+}
 
-unsigned char mos6507_flag_zero() { return mos6507_processor_status_flag(STATUS_BIT_ZERO); }
+unsigned char mos6507_flag_zero() {
+  return mos6507_processor_status_flag(STATUS_BIT_ZERO);
+}
 
-void mos6507_flag_zero_set() { mos6507_processor_status_flag_set(STATUS_BIT_ZERO); }
+void mos6507_flag_zero_set() {
+  mos6507_processor_status_flag_set(STATUS_BIT_ZERO);
+}
 
-void mos6507_flag_zero_unset() { mos6507_processor_status_flag_unset(STATUS_BIT_ZERO); }
+void mos6507_flag_zero_unset() {
+  mos6507_processor_status_flag_unset(STATUS_BIT_ZERO);
+}
 
 void mos6507_instruction_adc(unsigned char data) {
   /*
@@ -1722,4 +1754,3 @@ void mos6507_processor_status_flag_unset(unsigned char flag_bit) {
 unsigned short mos6507_stack_pull() { return stack[++stack_pointer]; }
 
 void mos6507_stack_push(unsigned short data) { stack[stack_pointer--] = data; }
-

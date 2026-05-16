@@ -132,4 +132,3 @@ void mos6507_processor_status_flag_set(unsigned char flag_bit);
 void mos6507_processor_status_flag_unset(unsigned char flag_bit);
 unsigned short mos6507_stack_pull();
 void mos6507_stack_push(unsigned short data);
-

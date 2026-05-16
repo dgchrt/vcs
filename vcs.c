@@ -1,7 +1,7 @@
 #include "vcs.h"
-#include "mos6507.h"
 #include "bus.h"
 #include "conio.h"
+#include "mos6507.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -46,7 +46,6 @@ void vcs_update() {
   }
 }
 
-
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("Usage: %s file.rom\n", argv[0]);
@@ -58,4 +57,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
