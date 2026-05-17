@@ -13,6 +13,14 @@ uint8_t running = 1;
 uint16_t stack[STACK_SIZE];
 uint16_t stack_pointer = 0xff;
 
+uint8_t mos6507_read(uint16_t address) {
+    return bus_read(address);
+}
+
+void mos6507_write(uint16_t address, uint8_t value) {
+    bus_write(address, value);
+}
+
 uint16_t addr_absolute() {
   /*
   Absolute
@@ -62,8 +70,8 @@ uint16_t addr_indirect() {
   uint8_t byte1;
   uint8_t byte2;
 
-  byte1 = bus_read(mos6507_operand_2bytes());
-  byte2 = bus_read(mos6507_operand_2bytes() + 1);
+  byte1 = mos6507_read(mos6507_operand_2bytes());
+  byte2 = mos6507_read(mos6507_operand_2bytes() + 1);
   return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
@@ -82,8 +90,8 @@ uint16_t mos6507_addr_indirect_x() {
 
   mos6507_fetch();
   address = instruction + index_register_x;
-  byte1 = bus_read(address);
-  byte2 = bus_read(address + 1);
+  byte1 = mos6507_read(address);
+  byte2 = mos6507_read(address + 1);
   return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
@@ -100,8 +108,8 @@ uint16_t mos6507_addr_indirect_y() {
   uint8_t byte2;
 
   mos6507_fetch();
-  byte1 = bus_read(instruction);
-  byte2 = bus_read(instruction + 1);
+  byte1 = mos6507_read(instruction);
+  byte2 = mos6507_read(instruction + 1);
   return ((byte1 | (byte2 << BYTE_SIZE)) + index_register_y) & BUS_MEMORY_MASK;
 }
 
@@ -187,11 +195,11 @@ void mos6507_check_zero(uint8_t data) {
   }
 }
 
-uint8_t data_absolute() { return bus_read(addr_absolute()); }
+uint8_t data_absolute() { return mos6507_read(addr_absolute()); }
 
-uint8_t data_absolute_x() { return bus_read(addr_absolute_x()); }
+uint8_t data_absolute_x() { return mos6507_read(addr_absolute_x()); }
 
-uint8_t data_absolute_y() { return bus_read(addr_absolute_y()); }
+uint8_t data_absolute_y() { return mos6507_read(addr_absolute_y()); }
 
 uint8_t data_immediate() {
   /*
@@ -204,15 +212,15 @@ uint8_t data_immediate() {
   return instruction;
 }
 
-uint8_t data_indirect_x() { return bus_read(mos6507_addr_indirect_x()); }
+uint8_t data_indirect_x() { return mos6507_read(mos6507_addr_indirect_x()); }
 
-uint8_t data_indirect_y() { return bus_read(mos6507_addr_indirect_y()); }
+uint8_t data_indirect_y() { return mos6507_read(mos6507_addr_indirect_y()); }
 
-uint8_t data_zero_page() { return bus_read(addr_zero_page()); }
+uint8_t data_zero_page() { return mos6507_read(addr_zero_page()); }
 
-uint8_t data_zero_page_x() { return bus_read(addr_zero_page_x()); }
+uint8_t data_zero_page_x() { return mos6507_read(addr_zero_page_x()); }
 
-uint8_t data_zero_page_y() { return bus_read(addr_zero_page_y()); }
+uint8_t data_zero_page_y() { return mos6507_read(addr_zero_page_y()); }
 
 int mos6507_decode() {
   switch (instruction) {
@@ -745,27 +753,27 @@ int mos6507_decode() {
     break;
 
   case 0xa3:
-    mos6507_instruction_lax(bus_read(mos6507_addr_indirect_x()));
+    mos6507_instruction_lax(mos6507_read(mos6507_addr_indirect_x()));
     break;
 
   case 0xa7:
-    mos6507_instruction_lax(bus_read(addr_zero_page()));
+    mos6507_instruction_lax(mos6507_read(addr_zero_page()));
     break;
 
   case 0xaf:
-    mos6507_instruction_lax(bus_read(addr_absolute()));
+    mos6507_instruction_lax(mos6507_read(addr_absolute()));
     break;
 
   case 0xb3:
-    mos6507_instruction_lax(bus_read(mos6507_addr_indirect_y()));
+    mos6507_instruction_lax(mos6507_read(mos6507_addr_indirect_y()));
     break;
 
   case 0xb7:
-    mos6507_instruction_lax(bus_read(addr_zero_page_y()));
+    mos6507_instruction_lax(mos6507_read(addr_zero_page_y()));
     break;
 
   case 0xbf:
-    mos6507_instruction_lax(bus_read(addr_absolute_y()));
+    mos6507_instruction_lax(mos6507_read(addr_absolute_y()));
     break;
 
   case 0xa4:
@@ -1073,7 +1081,7 @@ int mos6507_decode() {
 }
 
 void mos6507_fetch() {
-  instruction = bus_read(program_counter++);
+  instruction = mos6507_read(program_counter++);
   debug_update(program_counter - 1, instruction, accumulator, index_register_x,
                index_register_y, stack_pointer, processor_status);
 }
@@ -1250,7 +1258,7 @@ void mos6507_instruction_asl(uint16_t addr) {
   uint8_t data;
 
   if (addr) {
-    data = bus_read(addr);
+    data = mos6507_read(addr);
   } else {
     data = accumulator;
   }
@@ -1266,7 +1274,7 @@ void mos6507_instruction_asl(uint16_t addr) {
   mos6507_check_zero(data);
 
   if (addr) {
-    bus_write(addr, data);
+    mos6507_write(addr, data);
   } else {
     accumulator = data;
   }
@@ -1382,7 +1390,7 @@ void mos6507_instruction_brk() {
   mos6507_stack_push(program_counter >> BYTE_SIZE);
   mos6507_stack_push(processor_status);
   program_counter =
-      (bus_read(VECTOR_IRQ) | (bus_read(VECTOR_IRQ + 1) << BYTE_SIZE)) &
+      (mos6507_read(VECTOR_IRQ) | (mos6507_read(VECTOR_IRQ + 1) << BYTE_SIZE)) &
       BUS_MEMORY_MASK;
   mos6507_flag_break_set();
 }
@@ -1517,7 +1525,7 @@ void mos6507_instruction_dcp(uint16_t addr) {
   Decrements memory, then compares accumulator with memory.
   */
   mos6507_instruction_dec(addr);
-  mos6507_instruction_cmp(bus_read(addr));
+  mos6507_instruction_cmp(mos6507_read(addr));
 }
 
 void mos6507_instruction_dec(uint16_t addr) {
@@ -1528,9 +1536,9 @@ void mos6507_instruction_dec(uint16_t addr) {
   Subtracts one from the value held at a specified memory location setting the
   zero and negative flags as appropriate.
   */
-  uint8_t data = bus_read(addr);
+  uint8_t data = mos6507_read(addr);
   --data;
-  bus_write(addr, data);
+  mos6507_write(addr, data);
   mos6507_check_negative(data);
   mos6507_check_zero(data);
 }
@@ -1582,9 +1590,9 @@ void mos6507_instruction_inc(uint16_t addr) {
   Adds one to the value held at a specified memory location setting the zero and
   negative flags as appropriate.
   */
-  uint8_t data = bus_read(addr);
+  uint8_t data = mos6507_read(addr);
   ++data;
-  bus_write(addr, data);
+  mos6507_write(addr, data);
   mos6507_check_negative(data);
   mos6507_check_zero(data);
 }
@@ -1621,7 +1629,7 @@ void mos6507_instruction_isc(uint16_t addr) {
   Increments memory, then subtracts memory from accumulator with borrow.
   */
   mos6507_instruction_inc(addr);
-  mos6507_instruction_sbc(bus_read(addr));
+  mos6507_instruction_sbc(mos6507_read(addr));
 }
 
 void mos6507_instruction_jmp(uint16_t addr) {
@@ -1717,7 +1725,7 @@ void mos6507_instruction_lsr(uint16_t addr) {
   uint8_t data;
 
   if (addr) {
-    data = bus_read(addr);
+    data = mos6507_read(addr);
   } else {
     data = accumulator;
   }
@@ -1733,7 +1741,7 @@ void mos6507_instruction_lsr(uint16_t addr) {
   mos6507_check_zero(data);
 
   if (addr) {
-    bus_write(addr, data);
+    mos6507_write(addr, data);
   } else {
     accumulator = data;
   }
@@ -1809,7 +1817,7 @@ void mos6507_instruction_rla(uint16_t addr) {
   Rotates memory left, then ANDs accumulator with memory.
   */
   mos6507_instruction_rol(addr);
-  mos6507_instruction_and(bus_read(addr));
+  mos6507_instruction_and(mos6507_read(addr));
 }
 
 void mos6507_instruction_rol(uint16_t addr) {
@@ -1824,7 +1832,7 @@ void mos6507_instruction_rol(uint16_t addr) {
   uint8_t data;
 
   if (addr) {
-    data = bus_read(addr);
+    data = mos6507_read(addr);
   } else {
     data = accumulator;
   }
@@ -1841,7 +1849,7 @@ void mos6507_instruction_rol(uint16_t addr) {
   mos6507_check_zero(data);
 
   if (addr) {
-    bus_write(addr, data);
+    mos6507_write(addr, data);
   } else {
     accumulator = data;
   }
@@ -1859,7 +1867,7 @@ void mos6507_instruction_ror(uint16_t addr) {
   uint8_t data;
 
   if (addr) {
-    data = bus_read(addr);
+    data = mos6507_read(addr);
   } else {
     data = accumulator;
   }
@@ -1876,7 +1884,7 @@ void mos6507_instruction_ror(uint16_t addr) {
   mos6507_check_zero(data);
 
   if (addr) {
-    bus_write(addr, data);
+    mos6507_write(addr, data);
   } else {
     accumulator = data;
   }
@@ -1890,7 +1898,7 @@ void mos6507_instruction_rra(uint16_t addr) {
   Rotates memory right, then adds memory to accumulator with carry.
   */
   mos6507_instruction_ror(addr);
-  mos6507_instruction_adc(bus_read(addr));
+  mos6507_instruction_adc(mos6507_read(addr));
 }
 
 void mos6507_instruction_rti() {
@@ -1923,7 +1931,7 @@ void mos6507_instruction_sax(uint16_t addr) {
   M = A & X
   Stores the result of the accumulator AND the X register into memory.
   */
-  bus_write(addr, accumulator & index_register_x);
+  mos6507_write(addr, accumulator & index_register_x);
 }
 
 void mos6507_instruction_sbc(uint8_t data) {
@@ -2007,7 +2015,7 @@ void mos6507_instruction_sha(uint16_t addr) {
   the address into memory.
   */
   uint8_t high_byte = (addr >> 8);
-  bus_write(addr, accumulator & index_register_x & high_byte);
+  mos6507_write(addr, accumulator & index_register_x & high_byte);
 }
 
 void mos6507_instruction_slo(uint16_t addr) {
@@ -2018,7 +2026,7 @@ void mos6507_instruction_slo(uint16_t addr) {
   Shift memory left, then OR accumulator with memory.
   */
   mos6507_instruction_asl(addr);
-  mos6507_instruction_ora(bus_read(addr));
+  mos6507_instruction_ora(mos6507_read(addr));
 }
 
 void mos6507_instruction_sre(uint16_t addr) {
@@ -2029,7 +2037,7 @@ void mos6507_instruction_sre(uint16_t addr) {
   Shifts memory right, then EORs accumulator with memory.
   */
   mos6507_instruction_lsr(addr);
-  mos6507_instruction_eor(bus_read(addr));
+  mos6507_instruction_eor(mos6507_read(addr));
 }
 
 void mos6507_instruction_sta(uint16_t addr) {
@@ -2039,7 +2047,7 @@ void mos6507_instruction_sta(uint16_t addr) {
   M = A
   Stores the contents of the accumulator into memory.
   */
-  bus_write(addr, accumulator);
+  mos6507_write(addr, accumulator);
 }
 
 void mos6507_instruction_stx(uint16_t addr) {
@@ -2049,7 +2057,7 @@ void mos6507_instruction_stx(uint16_t addr) {
   M = X
   Stores the contents of the X register into memory.
   */
-  bus_write(addr, index_register_x);
+  mos6507_write(addr, index_register_x);
 }
 
 void mos6507_instruction_sty(uint16_t addr) {
@@ -2059,7 +2067,7 @@ void mos6507_instruction_sty(uint16_t addr) {
   M = Y
   Stores the contents of the Y register into memory.
   */
-  bus_write(addr, index_register_y);
+  mos6507_write(addr, index_register_y);
 }
 
 void mos6507_instruction_tas(uint16_t addr) {
@@ -2070,7 +2078,7 @@ void mos6507_instruction_tas(uint16_t addr) {
   S = A & X, M = S & H
   */
   stack_pointer = accumulator & index_register_x;
-  bus_write(addr, stack_pointer & (addr >> 8));
+  mos6507_write(addr, stack_pointer & (addr >> 8));
 }
 
 void mos6507_instruction_tax() {
