@@ -37,8 +37,8 @@ void vcs_cycle() {
 
 void vcs_load_rom(const char path[]) {
   FILE *file;
-  unsigned char byte;
-  unsigned short i;
+  uint8_t byte;
+  uint16_t i;
 
   file = fopen(path, "rb");
 

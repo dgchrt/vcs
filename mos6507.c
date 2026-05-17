@@ -2,18 +2,18 @@
 #include "bus.h"
 #include "debug.h"
 
-unsigned char accumulator;
-unsigned char index_register_x;
-unsigned char index_register_y;
-unsigned char instruction;
-unsigned char processor_status = 36;
-unsigned short program_counter;
-unsigned char registers[REGISTER_SIZE];
-unsigned char running = 1;
-unsigned short stack[STACK_SIZE];
-unsigned short stack_pointer = 0xff;
+uint8_t accumulator;
+uint8_t index_register_x;
+uint8_t index_register_y;
+uint8_t instruction;
+uint8_t processor_status = 36;
+uint16_t program_counter;
+uint8_t registers[REGISTER_SIZE];
+uint8_t running = 1;
+uint16_t stack[STACK_SIZE];
+uint16_t stack_pointer = 0xff;
 
-unsigned short addr_absolute() {
+uint16_t addr_absolute() {
   /*
   Absolute
 
@@ -23,7 +23,7 @@ unsigned short addr_absolute() {
   return mos6507_operand_2bytes() & BUS_MEMORY_MASK;
 }
 
-unsigned short addr_absolute_x() {
+uint16_t addr_absolute_x() {
   /*
   Absolute,X
 
@@ -36,7 +36,7 @@ unsigned short addr_absolute_x() {
   return (mos6507_operand_2bytes() + index_register_x) & BUS_MEMORY_MASK;
 }
 
-unsigned short addr_absolute_y() {
+uint16_t addr_absolute_y() {
   /*
   Absolute,Y
 
@@ -47,7 +47,7 @@ unsigned short addr_absolute_y() {
   return (mos6507_operand_2bytes() + index_register_y) & BUS_MEMORY_MASK;
 }
 
-unsigned short addr_indirect() {
+uint16_t addr_indirect() {
   /*
   Indirect
 
@@ -59,15 +59,15 @@ unsigned short addr_indirect() {
   next instruction execution to occur at $BAFC (e.g. the contents of $0120 and
   $0121).
   */
-  unsigned char byte1;
-  unsigned char byte2;
+  uint8_t byte1;
+  uint8_t byte2;
 
   byte1 = bus_read(mos6507_operand_2bytes());
   byte2 = bus_read(mos6507_operand_2bytes() + 1);
   return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
-unsigned short mos6507_addr_indirect_x() {
+uint16_t mos6507_addr_indirect_x() {
   /*
   Indexed Indirect
 
@@ -76,9 +76,9 @@ unsigned short mos6507_addr_indirect_x() {
   instruction and the X register added to it (with zero page wrap around) to
   give the location of the least significant byte of the target address.
   */
-  unsigned char address;
-  unsigned char byte1;
-  unsigned char byte2;
+  uint8_t address;
+  uint8_t byte1;
+  uint8_t byte2;
 
   mos6507_fetch();
   address = instruction + index_register_x;
@@ -87,7 +87,7 @@ unsigned short mos6507_addr_indirect_x() {
   return (byte1 | (byte2 << BYTE_SIZE)) & BUS_MEMORY_MASK;
 }
 
-unsigned short mos6507_addr_indirect_y() {
+uint16_t mos6507_addr_indirect_y() {
   /*
   Indirect Indexed
 
@@ -96,8 +96,8 @@ unsigned short mos6507_addr_indirect_y() {
   byte of 16 bit address. The Y register is dynamically added to this value to
   generated the actual target address for operation.
   */
-  unsigned char byte1;
-  unsigned char byte2;
+  uint8_t byte1;
+  uint8_t byte2;
 
   mos6507_fetch();
   byte1 = bus_read(instruction);
@@ -120,7 +120,7 @@ signed char mos6507_addr_relative() {
   return instruction;
 }
 
-unsigned short addr_zero_page() {
+uint16_t addr_zero_page() {
   /*
   Zero Page
 
@@ -132,7 +132,7 @@ unsigned short addr_zero_page() {
   return instruction & BUS_MEMORY_MASK;
 }
 
-unsigned short addr_zero_page_x() {
+uint16_t addr_zero_page_x() {
   /*
   Zero Page,X
 
@@ -150,7 +150,7 @@ unsigned short addr_zero_page_x() {
   return (instruction + index_register_x) & BUS_MEMORY_MASK;
 }
 
-unsigned short addr_zero_page_y() {
+uint16_t addr_zero_page_y() {
   /*
   Zero Page,Y
 
@@ -163,7 +163,7 @@ unsigned short addr_zero_page_y() {
   return (instruction + index_register_y) & BUS_MEMORY_MASK;
 }
 
-void mos6507_check_negative(unsigned char data) {
+void mos6507_check_negative(uint8_t data) {
   if ((data & (1 << STATUS_BIT_NEGATIVE)) > 0) {
     mos6507_flag_negative_set();
   } else {
@@ -171,7 +171,7 @@ void mos6507_check_negative(unsigned char data) {
   }
 }
 
-void mos6507_check_overflow(unsigned short data) {
+void mos6507_check_overflow(uint16_t data) {
   if (data > 0xff) {
     mos6507_flag_overflow_set();
   } else {
@@ -179,7 +179,7 @@ void mos6507_check_overflow(unsigned short data) {
   }
 }
 
-void mos6507_check_zero(unsigned char data) {
+void mos6507_check_zero(uint8_t data) {
   if (data == 0) {
     mos6507_flag_zero_set();
   } else {
@@ -187,13 +187,13 @@ void mos6507_check_zero(unsigned char data) {
   }
 }
 
-unsigned char data_absolute() { return bus_read(addr_absolute()); }
+uint8_t data_absolute() { return bus_read(addr_absolute()); }
 
-unsigned char data_absolute_x() { return bus_read(addr_absolute_x()); }
+uint8_t data_absolute_x() { return bus_read(addr_absolute_x()); }
 
-unsigned char data_absolute_y() { return bus_read(addr_absolute_y()); }
+uint8_t data_absolute_y() { return bus_read(addr_absolute_y()); }
 
-unsigned char data_immediate() {
+uint8_t data_immediate() {
   /*
   Immediate
 
@@ -204,15 +204,15 @@ unsigned char data_immediate() {
   return instruction;
 }
 
-unsigned char data_indirect_x() { return bus_read(mos6507_addr_indirect_x()); }
+uint8_t data_indirect_x() { return bus_read(mos6507_addr_indirect_x()); }
 
-unsigned char data_indirect_y() { return bus_read(mos6507_addr_indirect_y()); }
+uint8_t data_indirect_y() { return bus_read(mos6507_addr_indirect_y()); }
 
-unsigned char data_zero_page() { return bus_read(addr_zero_page()); }
+uint8_t data_zero_page() { return bus_read(addr_zero_page()); }
 
-unsigned char data_zero_page_x() { return bus_read(addr_zero_page_x()); }
+uint8_t data_zero_page_x() { return bus_read(addr_zero_page_x()); }
 
-unsigned char data_zero_page_y() { return bus_read(addr_zero_page_y()); }
+uint8_t data_zero_page_y() { return bus_read(addr_zero_page_y()); }
 
 int mos6507_decode() {
   switch (instruction) {
@@ -1078,7 +1078,7 @@ void mos6507_fetch() {
                index_register_y, stack_pointer, processor_status);
 }
 
-unsigned char mos6507_flag_break() {
+uint8_t mos6507_flag_break() {
   return mos6507_processor_status_flag(STATUS_BIT_BREAK);
 }
 
@@ -1090,7 +1090,7 @@ void mos6507_flag_break_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_BREAK);
 }
 
-unsigned char mos6507_flag_carry() {
+uint8_t mos6507_flag_carry() {
   return mos6507_processor_status_flag(STATUS_BIT_CARRY);
 }
 
@@ -1102,7 +1102,7 @@ void mos6507_flag_carry_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_CARRY);
 }
 
-unsigned char mos6507_flag_decimal() {
+uint8_t mos6507_flag_decimal() {
   return mos6507_processor_status_flag(STATUS_BIT_DECIMAL);
 }
 
@@ -1114,7 +1114,7 @@ void mos6507_flag_decimal_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_DECIMAL);
 }
 
-unsigned char mos6507_flag_interrupt() {
+uint8_t mos6507_flag_interrupt() {
   return mos6507_processor_status_flag(STATUS_BIT_INTERRUPT);
 }
 
@@ -1126,7 +1126,7 @@ void mos6507_flag_interrupt_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_INTERRUPT);
 }
 
-unsigned char mos6507_flag_negative() {
+uint8_t mos6507_flag_negative() {
   return mos6507_processor_status_flag(STATUS_BIT_NEGATIVE);
 }
 
@@ -1138,7 +1138,7 @@ void mos6507_flag_negative_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_NEGATIVE);
 }
 
-unsigned char mos6507_flag_overflow() {
+uint8_t mos6507_flag_overflow() {
   return mos6507_processor_status_flag(STATUS_BIT_OVERFLOW);
 }
 
@@ -1150,7 +1150,7 @@ void mos6507_flag_overflow_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_OVERFLOW);
 }
 
-unsigned char mos6507_flag_zero() {
+uint8_t mos6507_flag_zero() {
   return mos6507_processor_status_flag(STATUS_BIT_ZERO);
 }
 
@@ -1162,7 +1162,7 @@ void mos6507_flag_zero_unset() {
   mos6507_processor_status_flag_unset(STATUS_BIT_ZERO);
 }
 
-void mos6507_instruction_adc(unsigned char data) {
+void mos6507_instruction_adc(uint8_t data) {
   /*
   ADC - Add with Carry
 
@@ -1171,14 +1171,14 @@ void mos6507_instruction_adc(unsigned char data) {
   together with the carry bit. If overflow occurs the carry bit is set, this
   enables multiple byte addition to be performed.
   */
-  unsigned short sum = accumulator + data + mos6507_flag_carry();
+  uint16_t sum = accumulator + data + mos6507_flag_carry();
   accumulator = sum;
   mos6507_check_negative(accumulator);
   mos6507_check_overflow(sum);
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_alr(unsigned char data) {
+void mos6507_instruction_alr(uint8_t data) {
   /*
   ALR - AND Memory with Accumulator and LSR (Immediate)
 
@@ -1195,7 +1195,7 @@ void mos6507_instruction_alr(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_anc(unsigned char data) {
+void mos6507_instruction_anc(uint8_t data) {
   /*
   ANC - AND Memory with Accumulator (Immediate)
 
@@ -1211,7 +1211,7 @@ void mos6507_instruction_anc(unsigned char data) {
     mos6507_flag_carry_unset();
 }
 
-void mos6507_instruction_and(unsigned char data) {
+void mos6507_instruction_and(uint8_t data) {
   /*
   AND - Logical AND
 
@@ -1224,7 +1224,7 @@ void mos6507_instruction_and(unsigned char data) {
   mos6507_check_zero(data);
 }
 
-void mos6507_instruction_ane(unsigned char data) {
+void mos6507_instruction_ane(uint8_t data) {
   /*
   ANE - AND X Register with Accumulator and Memory (Immediate)
 
@@ -1236,7 +1236,7 @@ void mos6507_instruction_ane(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_asl(unsigned short addr) {
+void mos6507_instruction_asl(uint16_t addr) {
   /*
   ASL - Arithmetic Shift Left
 
@@ -1247,7 +1247,7 @@ void mos6507_instruction_asl(unsigned short addr) {
   complement considerations), setting the carry if the result will not fit in 8
   bits.
   */
-  unsigned char data;
+  uint8_t data;
 
   if (addr) {
     data = bus_read(addr);
@@ -1308,7 +1308,7 @@ void mos6507_instruction_beq(signed char addr) {
   }
 }
 
-void mos6507_instruction_bit(unsigned char data) {
+void mos6507_instruction_bit(uint8_t data) {
   /*
   BIT - Bit Test
 
@@ -1318,7 +1318,7 @@ void mos6507_instruction_bit(unsigned char data) {
   set or clear the zero flag, but the result is not kept. Bits 7 and 6 of the
   value from memory are copied into the N and V flags.
   */
-  unsigned char result = accumulator & data;
+  uint8_t result = accumulator & data;
 
   if ((result >> STATUS_BIT_NEGATIVE) & 1) {
     mos6507_flag_negative_set();
@@ -1452,7 +1452,7 @@ void mos6507_instruction_clv() {
   mos6507_flag_overflow_unset();
 }
 
-void mos6507_instruction_cmp(unsigned char data) {
+void mos6507_instruction_cmp(uint8_t data) {
   /*
   CMP - Compare
 
@@ -1460,7 +1460,7 @@ void mos6507_instruction_cmp(unsigned char data) {
   This instruction compares the contents of the accumulator with another memory
   held value and sets the zero and carry flags as appropriate.
   */
-  unsigned char result = accumulator - data;
+  uint8_t result = accumulator - data;
   mos6507_check_negative(result);
   mos6507_check_zero(result);
 
@@ -1471,7 +1471,7 @@ void mos6507_instruction_cmp(unsigned char data) {
   }
 }
 
-void mos6507_instruction_cpx(unsigned char data) {
+void mos6507_instruction_cpx(uint8_t data) {
   /*
   CPX - Compare X Register
 
@@ -1479,7 +1479,7 @@ void mos6507_instruction_cpx(unsigned char data) {
   This instruction compares the contents of the X register with another memory
   held value and sets the zero and carry flags as appropriate.
   */
-  unsigned char result = index_register_x - data;
+  uint8_t result = index_register_x - data;
   mos6507_check_negative(result);
   mos6507_check_zero(result);
 
@@ -1490,7 +1490,7 @@ void mos6507_instruction_cpx(unsigned char data) {
   }
 }
 
-void mos6507_instruction_cpy(unsigned char data) {
+void mos6507_instruction_cpy(uint8_t data) {
   /*
   CPY - Compare Y Register
 
@@ -1498,7 +1498,7 @@ void mos6507_instruction_cpy(unsigned char data) {
   This instruction compares the contents of the Y register with another memory
   held value and sets the zero and carry flags as appropriate.
   */
-  unsigned char result = index_register_y - data;
+  uint8_t result = index_register_y - data;
   mos6507_check_negative(result);
   mos6507_check_zero(result);
 
@@ -1509,7 +1509,7 @@ void mos6507_instruction_cpy(unsigned char data) {
   }
 }
 
-void mos6507_instruction_dcp(unsigned short addr) {
+void mos6507_instruction_dcp(uint16_t addr) {
   /*
   DCP - Decrement Memory and Compare
 
@@ -1520,7 +1520,7 @@ void mos6507_instruction_dcp(unsigned short addr) {
   mos6507_instruction_cmp(bus_read(addr));
 }
 
-void mos6507_instruction_dec(unsigned short addr) {
+void mos6507_instruction_dec(uint16_t addr) {
   /*
   DEC - Decrement Memory
 
@@ -1528,7 +1528,7 @@ void mos6507_instruction_dec(unsigned short addr) {
   Subtracts one from the value held at a specified memory location setting the
   zero and negative flags as appropriate.
   */
-  unsigned char data = bus_read(addr);
+  uint8_t data = bus_read(addr);
   --data;
   bus_write(addr, data);
   mos6507_check_negative(data);
@@ -1561,7 +1561,7 @@ void mos6507_instruction_dey() {
   mos6507_check_zero(index_register_y);
 }
 
-void mos6507_instruction_eor(unsigned char data) {
+void mos6507_instruction_eor(uint8_t data) {
   /*
   EOR - Exclusive OR
 
@@ -1574,7 +1574,7 @@ void mos6507_instruction_eor(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_inc(unsigned short addr) {
+void mos6507_instruction_inc(uint16_t addr) {
   /*
   INC - Increment Memory
 
@@ -1582,7 +1582,7 @@ void mos6507_instruction_inc(unsigned short addr) {
   Adds one to the value held at a specified memory location setting the zero and
   negative flags as appropriate.
   */
-  unsigned char data = bus_read(addr);
+  uint8_t data = bus_read(addr);
   ++data;
   bus_write(addr, data);
   mos6507_check_negative(data);
@@ -1613,7 +1613,7 @@ void mos6507_instruction_iny() {
   mos6507_check_zero(index_register_y);
 }
 
-void mos6507_instruction_isc(unsigned short addr) {
+void mos6507_instruction_isc(uint16_t addr) {
   /*
   ISC - Increment Memory and Subtract with Carry
 
@@ -1624,7 +1624,7 @@ void mos6507_instruction_isc(unsigned short addr) {
   mos6507_instruction_sbc(bus_read(addr));
 }
 
-void mos6507_instruction_jmp(unsigned short addr) {
+void mos6507_instruction_jmp(uint16_t addr) {
   /*
   JMP - Jump
 
@@ -1633,7 +1633,7 @@ void mos6507_instruction_jmp(unsigned short addr) {
   program_counter = addr;
 }
 
-void mos6507_instruction_jsr(unsigned short addr) {
+void mos6507_instruction_jsr(uint16_t addr) {
   /*
   JSR - Jump to Subroutine
 
@@ -1645,7 +1645,7 @@ void mos6507_instruction_jsr(unsigned short addr) {
   program_counter = addr;
 }
 
-void mos6507_instruction_las(unsigned char data) {
+void mos6507_instruction_las(uint8_t data) {
   /*
   LAS - Load Accumulator, X Register, and Stack Pointer
 
@@ -1656,7 +1656,7 @@ void mos6507_instruction_las(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_lax(unsigned char data) {
+void mos6507_instruction_lax(uint8_t data) {
   /*
   LAX - Load Accumulator and X Register
 
@@ -1667,7 +1667,7 @@ void mos6507_instruction_lax(unsigned char data) {
   mos6507_instruction_ldx(data);
 }
 
-void mos6507_instruction_lda(unsigned char data) {
+void mos6507_instruction_lda(uint8_t data) {
   /*
   LDA - Load Accumulator
 
@@ -1680,7 +1680,7 @@ void mos6507_instruction_lda(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_ldx(unsigned char data) {
+void mos6507_instruction_ldx(uint8_t data) {
   /*
   LDX - Load X Register
 
@@ -1693,7 +1693,7 @@ void mos6507_instruction_ldx(unsigned char data) {
   mos6507_check_zero(index_register_x);
 }
 
-void mos6507_instruction_ldy(unsigned char data) {
+void mos6507_instruction_ldy(uint8_t data) {
   /*
   LDY - Load Y Register
 
@@ -1706,7 +1706,7 @@ void mos6507_instruction_ldy(unsigned char data) {
   mos6507_check_zero(index_register_y);
 }
 
-void mos6507_instruction_lsr(unsigned short addr) {
+void mos6507_instruction_lsr(uint16_t addr) {
   /*
   LSR - Logical Shift Right
 
@@ -1714,7 +1714,7 @@ void mos6507_instruction_lsr(unsigned short addr) {
   Each of the bits in A or M is shift one place to the right. The bit that was
   in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
   */
-  unsigned char data;
+  uint8_t data;
 
   if (addr) {
     data = bus_read(addr);
@@ -1748,7 +1748,7 @@ void mos6507_instruction_nop() {
   */
 }
 
-void mos6507_instruction_ora(unsigned char data) {
+void mos6507_instruction_ora(uint8_t data) {
   /*
   ORA - Logical Inclusive OR
 
@@ -1801,7 +1801,7 @@ void mos6507_instruction_plp() {
   processor_status = mos6507_stack_pull();
 }
 
-void mos6507_instruction_rla(unsigned short addr) {
+void mos6507_instruction_rla(uint16_t addr) {
   /*
   RLA - Rotate Left and AND
 
@@ -1812,7 +1812,7 @@ void mos6507_instruction_rla(unsigned short addr) {
   mos6507_instruction_and(bus_read(addr));
 }
 
-void mos6507_instruction_rol(unsigned short addr) {
+void mos6507_instruction_rol(uint16_t addr) {
   /*
   ROL - Rotate Left
 
@@ -1820,8 +1820,8 @@ void mos6507_instruction_rol(unsigned short addr) {
   Bit 0 is filled with the current value of the carry flag whilst the old bit 7
   becomes the new carry flag value.
   */
-  unsigned char carry_in = mos6507_flag_carry();
-  unsigned char data;
+  uint8_t carry_in = mos6507_flag_carry();
+  uint8_t data;
 
   if (addr) {
     data = bus_read(addr);
@@ -1847,7 +1847,7 @@ void mos6507_instruction_rol(unsigned short addr) {
   }
 }
 
-void mos6507_instruction_ror(unsigned short addr) {
+void mos6507_instruction_ror(uint16_t addr) {
   /*
   ROR - Rotate Right
 
@@ -1855,8 +1855,8 @@ void mos6507_instruction_ror(unsigned short addr) {
   Bit 7 is filled with the current value of the carry flag whilst the old bit 0
   becomes the new carry flag value.
   */
-  unsigned char carry_in = mos6507_flag_carry();
-  unsigned char data;
+  uint8_t carry_in = mos6507_flag_carry();
+  uint8_t data;
 
   if (addr) {
     data = bus_read(addr);
@@ -1882,7 +1882,7 @@ void mos6507_instruction_ror(unsigned short addr) {
   }
 }
 
-void mos6507_instruction_rra(unsigned short addr) {
+void mos6507_instruction_rra(uint16_t addr) {
   /*
   RRA - Rotate Right and Add with Carry
 
@@ -1916,7 +1916,7 @@ void mos6507_instruction_rts() {
   program_counter |= mos6507_stack_pull();
 }
 
-void mos6507_instruction_sax(unsigned short addr) {
+void mos6507_instruction_sax(uint16_t addr) {
   /*
   SAX - Store Accumulator AND X Register
 
@@ -1926,7 +1926,7 @@ void mos6507_instruction_sax(unsigned short addr) {
   bus_write(addr, accumulator & index_register_x);
 }
 
-void mos6507_instruction_sbc(unsigned char data) {
+void mos6507_instruction_sbc(uint8_t data) {
   /*
   SBC - Subtract with Carry
 
@@ -1935,7 +1935,7 @@ void mos6507_instruction_sbc(unsigned char data) {
   accumulator together with the not of the carry bit. If overflow occurs the
   carry bit is clear, this enables multiple byte subtraction to be performed.
   */
-  unsigned char subtract = data;
+  uint8_t subtract = data;
 
   if (!mos6507_flag_carry()) {
     ++subtract;
@@ -1952,13 +1952,13 @@ void mos6507_instruction_sbc(unsigned char data) {
   mos6507_check_zero(accumulator);
 }
 
-void mos6507_instruction_sbx(unsigned char data) {
+void mos6507_instruction_sbx(uint8_t data) {
   /*
   SBX - Subtract Memory from Accumulator AND X Register
 
   X = (A & X) - M
   */
-  unsigned char val = (accumulator & index_register_x);
+  uint8_t val = (accumulator & index_register_x);
   if (val >= data)
     mos6507_flag_carry_set();
   else
@@ -1998,7 +1998,7 @@ void mos6507_instruction_sei() {
   mos6507_flag_interrupt_set();
 }
 
-void mos6507_instruction_sha(unsigned short addr) {
+void mos6507_instruction_sha(uint16_t addr) {
   /*
   SHA - Store Accumulator AND X Register AND High Byte of Address
 
@@ -2006,11 +2006,11 @@ void mos6507_instruction_sha(unsigned short addr) {
   Stores the result of the accumulator AND the X register AND the high byte of
   the address into memory.
   */
-  unsigned char high_byte = (addr >> 8);
+  uint8_t high_byte = (addr >> 8);
   bus_write(addr, accumulator & index_register_x & high_byte);
 }
 
-void mos6507_instruction_slo(unsigned short addr) {
+void mos6507_instruction_slo(uint16_t addr) {
   /*
   SLO - Store ASL and ORA
 
@@ -2021,7 +2021,7 @@ void mos6507_instruction_slo(unsigned short addr) {
   mos6507_instruction_ora(bus_read(addr));
 }
 
-void mos6507_instruction_sre(unsigned short addr) {
+void mos6507_instruction_sre(uint16_t addr) {
   /*
   SRE - Shift Right and Exclusive OR
 
@@ -2032,7 +2032,7 @@ void mos6507_instruction_sre(unsigned short addr) {
   mos6507_instruction_eor(bus_read(addr));
 }
 
-void mos6507_instruction_sta(unsigned short addr) {
+void mos6507_instruction_sta(uint16_t addr) {
   /*
   STA - Store Accumulator
 
@@ -2042,7 +2042,7 @@ void mos6507_instruction_sta(unsigned short addr) {
   bus_write(addr, accumulator);
 }
 
-void mos6507_instruction_stx(unsigned short addr) {
+void mos6507_instruction_stx(uint16_t addr) {
   /*
   STX - Store X Register
 
@@ -2052,7 +2052,7 @@ void mos6507_instruction_stx(unsigned short addr) {
   bus_write(addr, index_register_x);
 }
 
-void mos6507_instruction_sty(unsigned short addr) {
+void mos6507_instruction_sty(uint16_t addr) {
   /*
   STY - Store Y Register
 
@@ -2062,7 +2062,7 @@ void mos6507_instruction_sty(unsigned short addr) {
   bus_write(addr, index_register_y);
 }
 
-void mos6507_instruction_tas(unsigned short addr) {
+void mos6507_instruction_tas(uint16_t addr) {
   /*
   TAS - Transfer Accumulator AND X Register to Stack Pointer, and store in
   memory.
@@ -2148,9 +2148,9 @@ void mos6507_instruction_tya() {
   mos6507_check_zero(accumulator);
 }
 
-unsigned short mos6507_operand_2bytes() {
-  unsigned char byte1;
-  unsigned char byte2;
+uint16_t mos6507_operand_2bytes() {
+  uint8_t byte1;
+  uint8_t byte2;
 
   mos6507_fetch();
   byte1 = instruction;
@@ -2159,18 +2159,18 @@ unsigned short mos6507_operand_2bytes() {
   return byte1 | (byte2 << BYTE_SIZE);
 }
 
-unsigned char mos6507_processor_status_flag(unsigned char flag_bit) {
+uint8_t mos6507_processor_status_flag(uint8_t flag_bit) {
   return (processor_status >> flag_bit) & 1;
 }
 
-void mos6507_processor_status_flag_set(unsigned char flag_bit) {
+void mos6507_processor_status_flag_set(uint8_t flag_bit) {
   processor_status |= (1 << flag_bit);
 }
 
-void mos6507_processor_status_flag_unset(unsigned char flag_bit) {
+void mos6507_processor_status_flag_unset(uint8_t flag_bit) {
   processor_status &= ~(1 << flag_bit);
 }
 
-unsigned short mos6507_stack_pull() { return stack[++stack_pointer]; }
+uint16_t mos6507_stack_pull() { return stack[++stack_pointer]; }
 
-void mos6507_stack_push(unsigned short data) { stack[stack_pointer--] = data; }
+void mos6507_stack_push(uint16_t data) { stack[stack_pointer--] = data; }

@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef BUS_H
 #define BUS_H
 
@@ -7,9 +9,9 @@
 #define ADDRESS_END_TIA 0x80
 #define ADDRESS_END_RIOT_RAM 0x100
 
-extern unsigned char bus_memory[BUS_MEMORY_SIZE];
+extern uint8_t bus_memory[BUS_MEMORY_SIZE];
 
-unsigned char bus_read(unsigned short address);
-void bus_write(unsigned short address, unsigned char value);
+uint8_t bus_read(uint16_t address);
+void bus_write(uint16_t address, uint8_t value);
 
 #endif
