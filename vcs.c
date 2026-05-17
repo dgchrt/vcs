@@ -18,12 +18,13 @@ void vcs_cycle() {
     int cycles = mos6507_decode();
 
     for (int i = 0; i < cycles * 3; ++i) {
-        tia_tick(&tia);
+      tia_tick(&tia);
     }
-    
+
     if (tia.scanline == 0 && tia.cycle == 0) {
-        hal_present(tia.frame, 160, 192);
-        if (!hal_handle_events()) running = 0;
+      hal_present(tia.frame, 160, 192);
+      if (!hal_handle_events())
+        running = 0;
     }
 
     vcs_update();

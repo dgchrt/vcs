@@ -31,3 +31,9 @@ $(DIST_DIR):
 
 clean:
 	rm -rf $(BUILD_DIR) $(DIST_DIR)
+
+format:
+	clang-format -i $(SRCS) $(HDRS)
+
+lint:
+	cppcheck --enable=all --suppress=missingIncludeSystem $(SRCS) $(HDRS)

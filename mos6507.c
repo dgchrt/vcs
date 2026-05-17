@@ -17,13 +17,13 @@ uint16_t stack_pointer = 0xff;
 int cycles = 0;
 
 uint8_t mos6507_read(uint16_t address) {
-    ++cycles;
-    return bus_read(address);
+  ++cycles;
+  return bus_read(address);
 }
 
 void mos6507_write(uint16_t address, uint8_t value) {
-    ++cycles;
-    bus_write(address, value);
+  ++cycles;
+  bus_write(address, value);
 }
 
 uint16_t addr_absolute() {
