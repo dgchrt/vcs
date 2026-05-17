@@ -15,16 +15,11 @@ void vcs_update() {
 void vcs_cycle() {
   while (running) {
     mos6507_fetch();
-    int invalid_instruction = mos6507_decode();
+    int cycles = mos6507_decode();
 
-    if (invalid_instruction > 0) {
-      running = 0;
-      printf("Instruction %x not implemented.\n", invalid_instruction);
+    for (int i = 0; i < cycles * 3; ++i) {
+        tia_tick(&tia);
     }
-    
-    tia_tick(&tia);
-    tia_tick(&tia);
-    tia_tick(&tia);
     
     if (tia.scanline == 0 && tia.cycle == 0) {
         hal_present(tia.frame, 160, 192);
@@ -33,6 +28,11 @@ void vcs_cycle() {
 
     vcs_update();
   }
+}
+
+void vcs_instruction_not_implemented(int invalid_instruction) {
+  printf("Instruction %x not implemented.\n", invalid_instruction);
+  running = 0;
 }
 
 void vcs_load_rom(const char path[]) {

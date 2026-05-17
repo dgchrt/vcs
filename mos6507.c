@@ -1,6 +1,7 @@
 #include "mos6507.h"
 #include "bus.h"
 #include "debug.h"
+#include "vcs.h"
 
 uint8_t accumulator;
 uint8_t index_register_x;
@@ -13,11 +14,15 @@ uint8_t running = 1;
 uint16_t stack[STACK_SIZE];
 uint16_t stack_pointer = 0xff;
 
+int cycles = 0;
+
 uint8_t mos6507_read(uint16_t address) {
+    ++cycles;
     return bus_read(address);
 }
 
 void mos6507_write(uint16_t address, uint8_t value) {
+    ++cycles;
     bus_write(address, value);
 }
 
@@ -223,6 +228,8 @@ uint8_t data_zero_page_x() { return mos6507_read(addr_zero_page_x()); }
 uint8_t data_zero_page_y() { return mos6507_read(addr_zero_page_y()); }
 
 int mos6507_decode() {
+  cycles = 0;
+
   switch (instruction) {
   case 0x00:
     mos6507_instruction_brk();
@@ -1073,17 +1080,17 @@ int mos6507_decode() {
     break;
 
   default:
-    return 1;
+    vcs_instruction_not_implemented(instruction);
     break;
   }
 
-  return 0;
+  return cycles;
 }
 
 void mos6507_fetch() {
   instruction = mos6507_read(program_counter++);
   debug_update(program_counter - 1, instruction, accumulator, index_register_x,
-               index_register_y, stack_pointer, processor_status);
+               index_register_y, stack_pointer, processor_status, cycles);
 }
 
 uint8_t mos6507_flag_break() {
