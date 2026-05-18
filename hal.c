@@ -1,5 +1,5 @@
 #include "hal.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
